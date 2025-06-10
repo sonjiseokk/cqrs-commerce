@@ -75,13 +75,13 @@ public class Product {
 
     // 상품 카테고리들
     // 상품 삭제 시 같이 삭제됨
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "product_categories",
-            joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
-    private List<Category> categories = new ArrayList<>();
+    @Builder.Default
+    private List<ProductCategory> categories = new ArrayList<>();
 
     // 상품 옵션 그룹
     // 상품 삭제 시 같이 삭제됨
@@ -113,9 +113,26 @@ public class Product {
     private List<Review> reviews = new ArrayList<>();
 
     // ----------------------------------------------
-
     // Helper methods
+    public void addDetail(ProductDetail detail) {
+        this.detail = detail;
+    }
 
+    public void addProductPrice(ProductPrice price) {
+        this.price = price;
+    }
+
+    public void addOptionGroup(ProductOptionGroup optionGroup) {
+        this.optionGroups.add(optionGroup);
+    }
+
+    public void addSeller(Seller seller) {
+        this.seller = seller;
+    }
+
+    public void addBrand(Brand brand) {
+        this.brand = brand;
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -132,4 +149,7 @@ public class Product {
     public void delete() {
         this.status = ProductStatus.DELETED;
     }
+
+
+
 }
