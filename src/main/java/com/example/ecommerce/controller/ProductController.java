@@ -7,6 +7,7 @@ import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.service.command.ProductCommand;
 import com.example.ecommerce.service.command.ProductCommandHandler;
 import com.example.ecommerce.service.dto.ProductDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class ProductController {
     private final ProductRequestMapper mapper;
 
     @PostMapping()
-    public ResponseEntity<ApiResponse<?>> createProduct(@RequestBody ProductCreateRequest request) {
+    public ResponseEntity<ApiResponse<?>> createProduct(@RequestBody @Valid ProductCreateRequest request) {
         ProductCommand.CreateProduct command = mapper.toCreateCommand(request);
 
         ProductDto.ProductBasic response = commandHandler.createProduct(command);

@@ -1,10 +1,12 @@
 package com.example.ecommerce.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,11 +19,22 @@ import java.util.Map;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductCreateRequest {
+    @NotNull
+    @Length(min = 1, max = 255)
     private String name;
+
+    @NotNull
+    @Length(min = 1, max = 255)
     private String slug;
+
+    @Length(max = 500)
     private String shortDescription;
     private String fullDescription;
+
+    @NotNull
     private Long sellerId;
+
+    @NotNull
     private Long brandId;
     private String status; // ACTIVE, OUT_OF_STOCK, DELETED
 

@@ -1,5 +1,6 @@
 package com.example.ecommerce.service.command;
 
+import com.example.ecommerce.common.DuplicateSlugException;
 import com.example.ecommerce.common.ResourceNotFoundException;
 import com.example.ecommerce.entity.*;
 import com.example.ecommerce.repository.*;
@@ -36,6 +37,11 @@ public class ProductCommandService implements ProductCommandHandler {
     public ProductDto.ProductBasic createProduct(ProductCommand.CreateProduct command) {
         // 1. 기본 엔티티 생성
         Product product = mapper.toProductEntity(command);
+
+        // 1-1. 중복 슬러그 예외 처리
+        if (productRepository.existsBySlug(product.getSlug())) {
+            throw new DuplicateSlugException(product.getSlug());
+        }
 
         // 2. 연관관계 연결
         // Seller
