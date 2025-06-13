@@ -12,11 +12,12 @@ import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.WARN)
-public interface ProductCommandMapper {
+public interface ProductMapper {
     // 기본 설정
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -71,7 +72,57 @@ public interface ProductCommandMapper {
     ProductDto.ProductDetail toProductDetailDto(Product product);
 
     // Product 상세 변환
-    ProductDto.ProductSummary toProductSummaryDto(Product product);
+    default ProductDto.ProductSummary toProductSummaryDto(Product product) {
+        if (product == null) return null;
+
+        return ProductDto.ProductSummary.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .slug(product.getSlug())
+                .shortDescription(product.getShortDescription())
+                .basePrice(product.getPrice() != null ? product.getPrice().getBasePrice() : null)
+                .salePrice(product.getPrice() != null ? product.getPrice().getSalePrice() : null)
+                .currency(product.getPrice() != null ? product.getPrice().getCurrency() : null)
+                .primaryImage(toProductImageSummary(product.getImages()))
+                .brand(toBrandSummary(product.getBrand()))
+                .seller(toSellerSummary(product.getSeller()))
+                .rating(toRating(product.getReviews()))
+                .reviewCount(product.getReviews().size())
+                .inStock(product.getStatus().equals(ProductStatus.ACTIVE))
+                .status(product.getStatus().name())
+                .createdAt(product.getCreatedAt())
+                .build();
+    }
+
+    // Primary Image 변환
+    default ProductDto.ImageSummary toProductImageSummary(List<ProductImage> images) {
+        // Null 체크
+        if (images == null || images.isEmpty()) {
+            return null;
+        }
+
+        ProductImage primaryImage = images.stream()
+                .filter(ProductImage::isPrimary)
+                .findFirst().get();
+
+        return ProductDto.ImageSummary.builder()
+                .url(primaryImage.getUrl())
+                .altText(primaryImage.getAltText())
+                .build();
+    }
+
+    // BrandSummary 변환
+    ProductDto.BrandSummary toBrandSummary(Brand brand);
+
+    // SellerSummary 변환
+    ProductDto.SellerSummary toSellerSummary(Seller seller);
+
+    default Double toRating(List<Review> reviews) {
+        return reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+    }
 
     // Product 기본 변환
     ProductDto.ProductBasic toProductBasicDto(Product product);

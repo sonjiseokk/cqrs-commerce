@@ -5,7 +5,7 @@ import com.example.ecommerce.common.ResourceNotFoundException;
 import com.example.ecommerce.entity.*;
 import com.example.ecommerce.repository.*;
 import com.example.ecommerce.service.dto.ProductDto;
-import com.example.ecommerce.service.mapper.ProductCommandMapper;
+import com.example.ecommerce.service.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ProductCommandService implements ProductCommandHandler {
-    private final ProductCommandMapper mapper;
+    private final ProductMapper productMapper;
     private final ProductRepository productRepository;
     private final ProductDetailRepository productDetailRepository;
     private final SellerRepository sellerRepository;
@@ -36,7 +36,7 @@ public class ProductCommandService implements ProductCommandHandler {
     @Transactional
     public ProductDto.ProductBasic createProduct(ProductCommand.CreateProduct command) {
         // 1. 기본 엔티티 생성
-        Product product = mapper.toProductEntity(command);
+        Product product = productMapper.toProductEntity(command);
 
         // 1-1. 중복 슬러그 예외 처리
         if (productRepository.existsBySlug(product.getSlug())) {
@@ -63,14 +63,14 @@ public class ProductCommandService implements ProductCommandHandler {
 
         // 상세 정보
         if (command.getDetail() != null) {
-            ProductDetail detail = mapper.toProductDetailEntity(command.getDetail(), product);
+            ProductDetail detail = productMapper.toProductDetailEntity(command.getDetail(), product);
             productDetailRepository.save(detail);
             product.addDetail(detail);
         }
 
         // 가격 정보
         if (command.getPrice() != null) {
-            ProductPrice price = mapper.toProductPriceEntity(command.getPrice(), product);
+            ProductPrice price = productMapper.toProductPriceEntity(command.getPrice(), product);
             productPriceRepository.save(price);
             product.addProductPrice(price);
         }
@@ -108,13 +108,13 @@ public class ProductCommandService implements ProductCommandHandler {
         // 옵션 그룹들
         if (command.getOptionGroups() != null && !command.getOptionGroups().isEmpty()) {
             for (ProductDto.OptionGroup groupDto : command.getOptionGroups()) {
-                ProductOptionGroup group = mapper.toProductOptionGroupEntity(groupDto, product);
+                ProductOptionGroup group = productMapper.toProductOptionGroupEntity(groupDto, product);
                 product.getOptionGroups().add(group);
 
                 // 옵션들도 함께 연결
                 if (groupDto.getOptions() != null) {
                     for (ProductDto.Option optionDto : groupDto.getOptions()) {
-                        ProductOption option = mapper.toProductOptionEntity(optionDto, group);
+                        ProductOption option = productMapper.toProductOptionEntity(optionDto, group);
                         group.getOptions().add(option);
                     }
                 }
@@ -125,7 +125,7 @@ public class ProductCommandService implements ProductCommandHandler {
         productRepository.save(product);
 
         // 반환 DTO (기본 정보용)
-        return mapper.toProductBasicDto(product);
+        return productMapper.toProductBasicDto(product);
     }
 
 }

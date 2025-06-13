@@ -40,9 +40,13 @@ public class ProductCreateRequest {
 
     private ProductDetailDto detail;
     private ProductPriceDto price;
+    @Builder.Default
     private List<ProductCategoryDto> categories = new ArrayList<>();
+    @Builder.Default
     private List<OptionGroupDto> optionGroups = new ArrayList<>();
+    @Builder.Default
     private List<ImageDto> images = new ArrayList<>();
+    @Builder.Default
     private List<Long> tagIds = new ArrayList<>();
 
     @Data
@@ -80,6 +84,7 @@ public class ProductCreateRequest {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ProductCategoryDto {
         private Long categoryId;
+        @Builder.Default
         private Boolean isPrimary = false;
     }
 
@@ -91,6 +96,7 @@ public class ProductCreateRequest {
     public static class OptionGroupDto {
         private String name;
         private Integer displayOrder;
+        @Builder.Default
         private List<OptionDto> options = new ArrayList<>();
     }
 
