@@ -65,12 +65,12 @@ public class Product {
 
     // 상품 상세 설명들
     // 상품 삭제 시 같이 삭제됨
-    @OneToOne(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private ProductDetail detail;
 
     // 상품 가격들
     // 상품 삭제 시 같이 삭제됨
-    @OneToOne(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private ProductPrice price;
 
     // 상품 카테고리들
@@ -85,30 +85,25 @@ public class Product {
 
     // 상품 옵션 그룹
     // 상품 삭제 시 같이 삭제됨
-    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductOptionGroup> optionGroups = new ArrayList<>();
 
     // 상품 이미지들
     // 상품 삭제 시 같이 삭제됨
-    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
 
     // 상품 태그들
     // 상품 삭제 시 같이 삭제됨
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "product_tags",
-            joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
     @Builder.Default
     private List<Tag> tags = new ArrayList<>();
 
     // 상품 리뷰들
     // 상품 삭제 시 같이 삭제됨
-    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
@@ -120,10 +115,6 @@ public class Product {
 
     public void addProductPrice(ProductPrice price) {
         this.price = price;
-    }
-
-    public void addOptionGroup(ProductOptionGroup optionGroup) {
-        this.optionGroups.add(optionGroup);
     }
 
     public void addSeller(Seller seller) {

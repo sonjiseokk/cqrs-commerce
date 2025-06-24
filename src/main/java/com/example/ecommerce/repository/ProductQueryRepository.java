@@ -72,11 +72,11 @@ public class ProductQueryRepository {
 
         long totalCount = queryFactory.select(product.count())
                 .from(product)
-                .leftJoin(product.price, productPrice).fetchJoin()
-                .leftJoin(product.detail, productDetail).fetchJoin()
-                .leftJoin(product.seller, seller).fetchJoin()
-                .leftJoin(product.brand, brand).fetchJoin()
-                .leftJoin(product.images, productImage).fetchJoin()
+                .leftJoin(product.price, productPrice)
+                .leftJoin(product.detail, productDetail)
+                .leftJoin(product.seller, seller)
+                .leftJoin(product.brand, brand)
+                .leftJoin(product.images, productImage)
 //                .leftJoin(product.optionGroups, productOptionGroup).fetchJoin()
                 .where(
                         statusEq(query.getStatus()),
