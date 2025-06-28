@@ -97,9 +97,9 @@ public class Product {
 
     // 상품 태그들
     // 상품 삭제 시 같이 삭제됨
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "product")
     @Builder.Default
-    private List<Tag> tags = new ArrayList<>();
+    private List<ProductTag> tags = new ArrayList<>();
 
     // 상품 리뷰들
     // 상품 삭제 시 같이 삭제됨
@@ -123,6 +123,23 @@ public class Product {
 
     public void addBrand(Brand brand) {
         this.brand = brand;
+    }
+
+    public void eagerLoad(List<ProductOptionGroup> optionGroups, List<ProductTag> tags, List<ProductCategory> categories) {
+        // 옵션 그룹
+        if (optionGroups != null) {
+            this.optionGroups = optionGroups;
+        }
+
+        // 태그
+        if (tags != null) {
+            this.tags = tags;
+        }
+
+        // 카테고리
+        if (categories != null) {
+            this.categories = categories;
+        }
     }
 
     @PrePersist
