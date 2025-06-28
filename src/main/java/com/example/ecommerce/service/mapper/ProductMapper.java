@@ -6,12 +6,10 @@ import com.example.ecommerce.service.dto.ProductDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +67,7 @@ public interface ProductMapper {
                                       @Context ProductOption option);
 
     // Product 요약 변환
+    @Mapping(source = "reviews", target = "rating")
     ProductDto.ProductDetail toProductDetailDto(Product product);
 
     // Product 상세 변환
@@ -117,11 +116,74 @@ public interface ProductMapper {
     // SellerSummary 변환
     ProductDto.SellerSummary toSellerSummary(Seller seller);
 
+    // CategorySummary 변환
+    @Mapping(target = "parent", source = "parent")
+    // 재귀처럼 매핑
+    default ProductDto.CategorySummary toCategorySummary(ProductCategory productCategory){
+        if (productCategory == null) return null;
+
+        Category category = productCategory.getCategory();
+
+        return ProductDto.CategorySummary.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .slug(category.getSlug())
+                .parent(toParentCategory(category.getParent()))
+                .build();
+    }
+
+    // ParentCategory 변환
+    ProductDto.ParentCategory toParentCategory(Category category);
+
     default Double toRating(List<Review> reviews) {
         return reviews.stream()
                 .mapToInt(Review::getRating)
                 .average()
                 .orElse(0.0);
+    }
+
+    default ProductDto.RatingSummary toRatingSummary(List<Review> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
+            return ProductDto.RatingSummary.builder()
+                    .count(0)
+                    .average(0.0)
+                    .distribution(new HashMap<>())
+                    .build();
+        }
+
+        // 평점 및 리뷰 개수 계산
+        Double average = toRating(reviews);
+        int size = reviews.size();
+
+        // 평점 분포 계산 (1~5점)
+        Map<Integer, Integer> distribution = new HashMap<>();
+        for (int i = 1; i <= 5; i++) {
+            distribution.put(i, 0);
+        }
+
+        // 각 리뷰 점수 추적
+        for (Review review : reviews) {
+            int rating = review.getRating();
+            distribution.put(rating, distribution.getOrDefault(rating, 0) + 1);
+        }
+
+        return ProductDto.RatingSummary.builder()
+                .count(size)
+                .average(average)
+                .distribution(distribution)
+                .build();
+    }
+
+    // ProductTag 대응 변환
+    default ProductDto.Tag toTag(ProductTag productTag) {
+        if (productTag == null) return null;
+
+        Tag tag = productTag.getTag();
+        return ProductDto.Tag.builder()
+                .id(tag.getId())
+                .name(tag.getName())
+                .slug(tag.getSlug())
+                .build();
     }
 
     // Product 기본 변환
@@ -136,6 +198,21 @@ public interface ProductMapper {
         }
     }
 
+    default ProductDto.RelatedProduct toRelatedProduct(Product product) {
+        if (product == null) return null;
+
+        return ProductDto.RelatedProduct.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .slug(product.getSlug())
+                .shortDescription(product.getShortDescription())
+                .primaryImage(toProductImageSummary(product.getImages()))
+                .basePrice(product.getPrice().getBasePrice())
+                .salePrice(product.getPrice().getSalePrice())
+                .currency(product.getPrice().getCurrency())
+                .build();
+
+    }
     // String → Map 변환
     default Map<String, Object> map(String json) {
         try {

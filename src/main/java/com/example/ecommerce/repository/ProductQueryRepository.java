@@ -1,15 +1,19 @@
 package com.example.ecommerce.repository;
 
-import com.example.ecommerce.entity.Product;
-import com.example.ecommerce.entity.ProductStatus;
+import com.example.ecommerce.entity.*;
+import com.example.ecommerce.service.dto.ProductDto;
 import com.example.ecommerce.service.query.ProductQuery;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,17 +22,21 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.example.ecommerce.entity.QBrand.brand;
+import static com.example.ecommerce.entity.QCategory.category;
 import static com.example.ecommerce.entity.QProduct.product;
+import static com.example.ecommerce.entity.QProductCategory.productCategory;
 import static com.example.ecommerce.entity.QProductDetail.productDetail;
 import static com.example.ecommerce.entity.QProductImage.productImage;
 import static com.example.ecommerce.entity.QProductOption.productOption;
 import static com.example.ecommerce.entity.QProductOptionGroup.productOptionGroup;
 import static com.example.ecommerce.entity.QProductPrice.productPrice;
+import static com.example.ecommerce.entity.QProductTag.productTag;
 import static com.example.ecommerce.entity.QSeller.seller;
+import static com.example.ecommerce.entity.QTag.tag;
 import static com.querydsl.jpa.JPAExpressions.*;
 
 @Repository
@@ -36,6 +44,119 @@ import static com.querydsl.jpa.JPAExpressions.*;
 @RequiredArgsConstructor
 public class ProductQueryRepository {
     private final JPAQueryFactory queryFactory;
+
+    public Optional<Product> getProduct(ProductQuery.GetProduct query) {
+        Product content = queryFactory.select(product)
+                .from(product)
+                .leftJoin(product.price, productPrice).fetchJoin()
+                .leftJoin(product.detail, productDetail).fetchJoin()
+                .leftJoin(product.seller, seller).fetchJoin()
+                .leftJoin(product.brand, brand).fetchJoin()
+                .leftJoin(product.images, productImage).fetchJoin()
+                .where(product.id.eq(query.getProductId()))
+                .fetchOne();
+
+        // 2차 조회 - optionGroup
+        List<ProductOptionGroup> optionGroups = queryFactory
+                .selectDistinct(productOptionGroup)
+                .from(productOptionGroup)
+                .where(productOptionGroup.product.id.eq(query.getProductId()))
+                .fetch();
+
+        // 3차 조회 - options
+        List<ProductOption> options = queryFactory
+                .selectFrom(QProductOption.productOption)
+                .where(QProductOption.productOption.optionGroup.id.in(
+                        optionGroups.stream().map(ProductOptionGroup::getId).toList()
+                ))
+                .fetch();
+
+        // 1. 옵션 리스트를 groupId 기준으로 map으로 묶고
+        Map<Long, List<ProductOption>> optionsByGroupId = options.stream()
+                .collect(Collectors.groupingBy(option -> option.getOptionGroup().getId()));
+
+        // 2. 각 그룹에 직접 세팅
+        for (ProductOptionGroup group : optionGroups) {
+            List<ProductOption> relatedOptions = optionsByGroupId.getOrDefault(group.getId(), List.of());
+            group.setOptions(relatedOptions); // 수동으로 options 연결
+        }
+
+        // 4차 조회 - tags
+        List<ProductTag> tags = queryFactory.selectFrom(productTag)
+                .leftJoin(productTag.tag, tag).fetchJoin()
+                .where(productTag.product.id.eq(query.getProductId()))
+                .fetch();
+
+        QCategory parentCategory = new QCategory("parentCategory");
+
+        // 5차 조회 - categories
+        List<ProductCategory> categories = queryFactory.select(productCategory)
+                .from(productCategory)
+                .leftJoin(productCategory.category, category).fetchJoin()
+                .leftJoin(category.parent, parentCategory).fetchJoin()
+                .where(productCategory.product.id.eq(query.getProductId()))
+                .fetch();
+
+        for (ProductCategory entity : categories) {
+            Hibernate.initialize(entity.getCategory());
+        }
+
+        // LAZY -> EAGER
+        content.eagerLoad(optionGroups, tags, categories);
+
+        return Optional.ofNullable(content);
+    }
+
+    // 관련 제품 리스트 조회
+    // - 1번째 카테고리
+    // - 랜덤 정렬된 5가지 제품
+    public List<ProductDto.RelatedProduct> getRelatedProduct(Product content) {
+        // 중간 엔티티 -> Category 연결
+        ProductCategory selectedProductCategory = content.getCategories().get(0);
+        Category selectedCategory = selectedProductCategory.getCategory();
+
+        // flat DTO Projection 조회
+        List<Tuple> result = queryFactory
+                .select(
+                        product.id,
+                        product.name,
+                        product.slug,
+                        product.shortDescription,
+                        productPrice.basePrice,
+                        productPrice.salePrice,
+                        productPrice.currency,
+                        productImage.url,
+                        productImage.altText
+                )
+                .from(product)
+                .leftJoin(product.price, productPrice)
+                .leftJoin(product.images, productImage)
+                .leftJoin(product.categories, productCategory)
+                .where(
+                        productCategory.category.id.eq(selectedCategory.getId()),
+                        product.id.ne(content.getId())
+                )
+                .orderBy(Expressions.numberTemplate(Double.class, "random()").asc())
+                .limit(5)
+                .fetch();
+
+        // DTO 변환
+        return result.stream()
+                .map(tuple -> ProductDto.RelatedProduct.builder()
+                        .id(tuple.get(product.id))
+                        .name(tuple.get(product.name))
+                        .slug(tuple.get(product.slug))
+                        .shortDescription(tuple.get(product.shortDescription))
+                        .basePrice(tuple.get(productPrice.basePrice))
+                        .salePrice(tuple.get(productPrice.salePrice))
+                        .currency(tuple.get(productPrice.currency))
+                        .primaryImage(ProductDto.ImageSummary.builder()
+                                .url(tuple.get(productImage.url))
+                                .altText(tuple.get(productImage.altText))
+                                .build())
+                        .build())
+                .toList();
+    }
 
     // 여러 필터 적용된 검색 기능 + 페이징
     public Page<Product> search(ProductQuery.ListProducts query) {

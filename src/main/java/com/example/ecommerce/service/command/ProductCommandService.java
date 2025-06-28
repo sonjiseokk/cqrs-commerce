@@ -29,6 +29,7 @@ public class ProductCommandService implements ProductCommandHandler {
 
     /**
      * Product 등록 처리
+     *
      * @param command
      * @return
      */
@@ -102,7 +103,11 @@ public class ProductCommandService implements ProductCommandHandler {
         // Tag
         if (!command.getTags().isEmpty()) {
             List<Tag> tags = tagRepository.findAllById(command.getTags());
-            product.getTags().addAll(tags);
+
+            for (Tag tag : tags) {
+                ProductTag productTag = ProductTag.create(product, tag);
+                product.getTags().add(productTag);
+            }
         }
 
         // 옵션 그룹들
