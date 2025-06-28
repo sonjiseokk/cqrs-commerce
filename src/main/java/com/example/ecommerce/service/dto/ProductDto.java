@@ -1,6 +1,8 @@
 package com.example.ecommerce.service.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +37,7 @@ public class ProductDto {
         private List<ImageDetail> images;
         private List<Tag> tags;
         private RatingSummary rating;
-        private List<ProductSummary> relatedProducts;
+        private List<RelatedProduct> relatedProducts;
     }
 
     /** Product 목록 조회용 */
@@ -153,6 +155,7 @@ public class ProductDto {
         private BigDecimal costPrice;
         private String currency;
         private BigDecimal taxRate;
+        @Builder.Default
         private Integer discountPercentage = 0;
     }
 
@@ -193,8 +196,10 @@ public class ProductDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class OptionGroup {
         private Long id;
+        private Long optionGroupId;
         private String name;
         private Integer displayOrder;
         private List<Option> options;
@@ -208,6 +213,7 @@ public class ProductDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Option {
         private Long id;
         private Long optionGroupId; // 명시적으로 추가
@@ -305,4 +311,22 @@ public class ProductDto {
         private LocalDateTime updatedAt;
     }
 
+    /**
+     * Product
+     * - ProductCommand Create
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class RelatedProduct {
+        private Long id;
+        private String name;
+        private String slug;
+        private String shortDescription;
+        private ImageSummary primaryImage;
+        private BigDecimal basePrice;
+        private BigDecimal salePrice;
+        private String currency;
+    }
 }
