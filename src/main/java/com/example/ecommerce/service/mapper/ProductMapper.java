@@ -16,6 +16,10 @@ import java.util.Map;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface ProductMapper {
+    // -------------------------------------------------------------------------
+    // Command To Entity
+    // -------------------------------------------------------------------------
+
     // 기본 설정
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -66,6 +70,9 @@ public interface ProductMapper {
                                       @Context Product product,
                                       @Context ProductOption option);
 
+    // -------------------------------------------------------------------------
+    // Entity to DTO
+    // -------------------------------------------------------------------------
     // Product 요약 변환
     @Mapping(source = "reviews", target = "rating")
     ProductDto.ProductDetail toProductDetailDto(Product product);
