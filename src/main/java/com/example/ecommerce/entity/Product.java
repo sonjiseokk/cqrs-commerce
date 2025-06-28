@@ -109,19 +109,19 @@ public class Product {
 
     // ----------------------------------------------
     // Helper methods
-    public void addDetail(ProductDetail detail) {
+    public void updateDetail(ProductDetail detail) {
         this.detail = detail;
     }
 
-    public void addProductPrice(ProductPrice price) {
+    public void updateProductPrice(ProductPrice price) {
         this.price = price;
     }
 
-    public void addSeller(Seller seller) {
+    public void updateSeller(Seller seller) {
         this.seller = seller;
     }
 
-    public void addBrand(Brand brand) {
+    public void updateBrand(Brand brand) {
         this.brand = brand;
     }
 

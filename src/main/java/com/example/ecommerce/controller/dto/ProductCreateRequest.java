@@ -47,7 +47,7 @@ public class ProductCreateRequest {
     @Builder.Default
     private List<ImageDto> images = new ArrayList<>();
     @Builder.Default
-    private List<Long> tagIds = new ArrayList<>();
+    private List<Long> tags = new ArrayList<>();
 
     @Data
     @NoArgsConstructor

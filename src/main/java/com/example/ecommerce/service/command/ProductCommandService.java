@@ -26,6 +26,9 @@ public class ProductCommandService implements ProductCommandHandler {
     private final TagRepository tagRepository;
     private final ProductPriceRepository productPriceRepository;
     private final ProductCategoryRepository productCategoryRepository;
+    private final ProductTagRepository productTagRepository;
+    private final ProductOptionRepository productOptionRepository;
+    private final ProductImageRepository productImageRepository;
 
     /**
      * Product 등록 처리
@@ -45,35 +48,79 @@ public class ProductCommandService implements ProductCommandHandler {
         }
 
         // 2. 연관관계 연결
+        connectEntity(command, product);
+
+        // 3. 저장 및 id 획득
+        product = productRepository.save(product);
+
+        // 반환 DTO (기본 정보용)
+        return productMapper.toProductBasicDto(product);
+    }
+
+    /**
+     * Product 업데이트 처리
+     *
+     * @param command
+     * @return
+     */
+    @Override
+    @Transactional
+    public ProductDto.ProductBasic updateProduct(Long productId, ProductCommand.UpdateProduct command) {
+        // 0. 중복 슬러그 예외 처리
+        if (productRepository.existsBySlug(command.getSlug())) {
+            throw new DuplicateSlugException(command.getSlug());
+        }
+
+        // 1. 기존 엔티티 조회
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", productId));
+
+        // 2. 연관관계 연결
+        connectEntity(command, product);
+
+        // 3. 엔티티 강제 업데이트
+        productRepository.save(product);
+
+        return productMapper.toProductBasicDto(product);
+    }
+
+    /**
+     * 공통 메소드
+     * <p>
+     * - 연관 관계 업데이트
+     *
+     * @param command
+     * @param product
+     */
+    private void connectEntity(ProductCommand.ProductBase command, Product product) {
         // Seller
         if (command.getSellerId() != null) {
             Seller seller = sellerRepository.findById(command.getSellerId())
                     .orElseThrow(() -> new ResourceNotFoundException("Seller", command.getSellerId()));
-            product.addSeller(seller);
+            product.updateSeller(seller);
         }
 
         // Brand
         if (command.getBrandId() != null) {
             Brand brand = brandRepository.findById(command.getBrandId())
                     .orElseThrow(() -> new ResourceNotFoundException("Brand", command.getSellerId()));
-            product.addBrand(brand);
+            product.updateBrand(brand);
         }
 
-        // 3. 저장 및 id 획득
+        // 영속성 업데이트
         product = productRepository.save(product);
 
-        // 상세 정보
+        // Product Detail
         if (command.getDetail() != null) {
             ProductDetail detail = productMapper.toProductDetailEntity(command.getDetail(), product);
             productDetailRepository.save(detail);
-            product.addDetail(detail);
+            product.updateDetail(detail);
         }
 
-        // 가격 정보
+        // Product Price
         if (command.getPrice() != null) {
             ProductPrice price = productMapper.toProductPriceEntity(command.getPrice(), product);
             productPriceRepository.save(price);
-            product.addProductPrice(price);
+            product.updateProductPrice(price);
         }
 
         // Category
@@ -85,6 +132,8 @@ public class ProductCommandService implements ProductCommandHandler {
                     .toList();
 
             List<Category> categories = categoryRepository.findAllById(categoryIds);
+
+            product.getCategories().clear(); // 연관관계 초기화
 
             // 연관 관계 설정
             for (Category category : categories) {
@@ -107,6 +156,7 @@ public class ProductCommandService implements ProductCommandHandler {
             for (Tag tag : tags) {
                 ProductTag productTag = ProductTag.create(product, tag);
                 product.getTags().add(productTag);
+                productTagRepository.save(productTag);
             }
         }
 
@@ -126,11 +176,27 @@ public class ProductCommandService implements ProductCommandHandler {
             }
         }
 
-        // 실제 저장
-        productRepository.save(product);
+        // Product Image
+        if (command.getImages() != null && !command.getImages().isEmpty()) {
+            for (ProductDto.ImageDetail imageDto : command.getImages()) {
+                ProductImage imageEntity;
+                // optionId 있는 경우
+                if (imageDto.getOptionId() != null) {
+                    // Option 조회 후, 연관관계 설정
+                    ProductOption option = productOptionRepository.findById(imageDto.getOptionId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Option", imageDto.getOptionId()));
+                    imageEntity = productMapper.toProductImageEntity(imageDto, product, option);
 
-        // 반환 DTO (기본 정보용)
-        return productMapper.toProductBasicDto(product);
+                    option.getImages().add(imageEntity);
+                } else {
+                    // optionId 없는 경우
+                    imageEntity = productMapper.toProductImageEntity(imageDto, product, null);
+                }
+
+                // 명시적 save
+                productImageRepository.save(imageEntity);
+            }
+        }
     }
 
 }
