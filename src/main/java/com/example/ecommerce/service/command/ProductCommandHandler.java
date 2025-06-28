@@ -4,4 +4,6 @@ import com.example.ecommerce.service.dto.ProductDto;
 
 public interface ProductCommandHandler {
     ProductDto.ProductBasic createProduct(ProductCommand.CreateProduct command);
+
+    ProductDto.ProductBasic updateProduct(Long productId, ProductCommand.UpdateProduct command);
 }

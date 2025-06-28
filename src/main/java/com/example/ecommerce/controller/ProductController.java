@@ -1,12 +1,8 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
-import com.example.ecommerce.controller.dto.ProductCreateRequest;
-import com.example.ecommerce.controller.dto.ProductGetResponse;
-import com.example.ecommerce.controller.dto.ProductListRequest;
-import com.example.ecommerce.controller.dto.ProductListResponse;
+import com.example.ecommerce.controller.dto.*;
 import com.example.ecommerce.controller.mapper.ProductRequestMapper;
-import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.service.command.ProductCommand;
 import com.example.ecommerce.service.command.ProductCommandHandler;
 import com.example.ecommerce.service.dto.ProductDto;
@@ -83,6 +79,26 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(
                 response,
                 "상품 상세 정보를 성공적으로 조회했습니다."
+        ));
+    }
+
+    /**
+     * 상품 수정
+     * PUT /api/products/{id}
+     *
+     * 특정 상품 정보를 수정합니다.
+     * @param productId
+     * @return
+     */
+    @PutMapping("/{productId}")
+    public ResponseEntity<ApiResponse<?>> updateProduct(@PathVariable Long productId, @ModelAttribute ProductUpdateRequest request) {
+        ProductCommand.UpdateProduct command = productRequestMapper.toUpdateProduct(request);
+
+        ProductDto.ProductBasic response = commandHandler.updateProduct(productId, command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                response,
+                "상품이 성공적으로 수정되었습니다."
         ));
     }
 }

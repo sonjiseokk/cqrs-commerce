@@ -2,6 +2,7 @@ package com.example.ecommerce.controller.mapper;
 
 import com.example.ecommerce.controller.dto.ProductCreateRequest;
 import com.example.ecommerce.controller.dto.ProductListRequest;
+import com.example.ecommerce.controller.dto.ProductUpdateRequest;
 import com.example.ecommerce.service.command.ProductCommand;
 import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.query.ProductQuery;
@@ -26,5 +27,7 @@ public interface ProductRequestMapper {
     }
 
     ProductQuery.GetProduct toGetProduct(Long productId);
+
+    ProductCommand.UpdateProduct toUpdateProduct(ProductUpdateRequest request);
 }
 
