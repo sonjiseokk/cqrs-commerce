@@ -24,5 +24,7 @@ public interface ProductRequestMapper {
                 .sort(request.getSort())
                 .build();
     }
+
+    ProductQuery.GetProduct toGetProduct(Long productId);
 }
 

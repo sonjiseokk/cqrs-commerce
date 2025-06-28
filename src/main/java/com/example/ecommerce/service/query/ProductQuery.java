@@ -30,4 +30,10 @@ public class ProductQuery {
 
         private PaginationDto.PaginationRequest pagination;
     }
+
+    @Data
+    @Builder
+    public static class GetProduct {
+        private Long productId;
+    }
 }

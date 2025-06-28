@@ -2,6 +2,7 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
 import com.example.ecommerce.controller.dto.ProductCreateRequest;
+import com.example.ecommerce.controller.dto.ProductGetResponse;
 import com.example.ecommerce.controller.dto.ProductListRequest;
 import com.example.ecommerce.controller.dto.ProductListResponse;
 import com.example.ecommerce.controller.mapper.ProductRequestMapper;
@@ -28,6 +29,14 @@ public class ProductController {
     private final ProductCommandHandler commandHandler;
     private final ProductRequestMapper productRequestMapper;
 
+    /**
+     * 상품 등록
+     * POST /api/products
+     *
+     * 새로운 상품을 등록합니다.
+     * @param request
+     * @return
+     */
     @PostMapping()
     public ResponseEntity<ApiResponse<?>> createProduct(@RequestBody @Valid ProductCreateRequest request) {
         ProductCommand.CreateProduct command = productRequestMapper.toCreateCommand(request);
@@ -38,6 +47,14 @@ public class ProductController {
                 .body(ApiResponse.success(response, "상품 등록이 완료되었습니다."));
     }
 
+    /**
+     * 상품 목록 조회
+     * GET /api/products
+     *
+     * 상품 목록을 조회합니다.
+     * @param request
+     * @return
+     */
     @GetMapping()
     public ResponseEntity<ApiResponse<?>> getProducts(@ModelAttribute ProductListRequest request) {
         ProductQuery.ListProducts query = productRequestMapper.toListQuery(request);
@@ -47,5 +64,25 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(
                 response,
                 "상품 목록을 성공적으로 조회했습니다."));
+    }
+
+    /**
+     * 상품 상세 조회
+     * GET /api/products/{id}
+     *
+     * 특정 상품의 상세 정보를 조회합니다.
+     * @param productId
+     * @return
+     */
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<?>> getProduct(@PathVariable Long productId) {
+        ProductQuery.GetProduct query = productRequestMapper.toGetProduct(productId);
+
+        ProductGetResponse response = queryHandler.getProduct(query);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                response,
+                "상품 상세 정보를 성공적으로 조회했습니다."
+        ));
     }
 }
