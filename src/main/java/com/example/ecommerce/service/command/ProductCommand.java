@@ -8,10 +8,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductCommand {
-    /** Product 생성 Command */
+    /**
+     * 공통 인터페이스 - 생성/수정 공용 필드
+     */
+    public interface ProductBase {
+        String getName();
+        String getSlug();
+        String getShortDescription();
+        String getFullDescription();
+        Long getSellerId();
+        Long getBrandId();
+        String getStatus();
+        ProductDto.Detail getDetail();
+        ProductDto.Price getPrice();
+        List<ProductDto.CategoryBasic> getCategories();
+        List<ProductDto.OptionGroup> getOptionGroups();
+        List<ProductDto.ImageDetail> getImages();
+        List<Long> getTags();
+    }
+
+    /**
+     * Product 생성 Command
+     */
     @Data
     @Builder
-    public static class CreateProduct {
+    public static class CreateProduct implements ProductBase {
+        private String name;
+        private String slug;
+        private String shortDescription;
+        private String fullDescription;
+        // 단일 ID
+        private Long sellerId;
+        private Long brandId;
+
+        private String status;
+
+        private ProductDto.Detail detail;
+        private ProductDto.Price price;
+
+        @Builder.Default
+        private List<ProductDto.CategoryBasic> categories = new ArrayList<>();
+        @Builder.Default
+        private List<ProductDto.OptionGroup> optionGroups = new ArrayList<>();
+        @Builder.Default
+        private List<ProductDto.ImageDetail> images = new ArrayList<>();
+        @Builder.Default
+        private List<Long> tags = new ArrayList<>();
+    }
+
+    // Product 업데이트 Command
+    @Data
+    @Builder
+    public static class UpdateProduct implements ProductBase {
         private String name;
         private String slug;
         private String shortDescription;
