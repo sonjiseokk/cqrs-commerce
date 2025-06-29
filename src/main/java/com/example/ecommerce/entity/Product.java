@@ -85,44 +85,74 @@ public class Product {
 
     // 상품 옵션 그룹
     // 상품 삭제 시 같이 삭제됨
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
     private List<ProductOptionGroup> optionGroups = new ArrayList<>();
 
     // 상품 이미지들
     // 상품 삭제 시 같이 삭제됨
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
 
     // 상품 태그들
     // 상품 삭제 시 같이 삭제됨
-    @OneToMany(mappedBy = "product")
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
     private List<ProductTag> tags = new ArrayList<>();
 
     // 상품 리뷰들
     // 상품 삭제 시 같이 삭제됨
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
     // ----------------------------------------------
     // Helper methods
-    public void updateDetail(ProductDetail detail) {
+    public void connectDetail(ProductDetail detail) {
         this.detail = detail;
     }
 
-    public void updateProductPrice(ProductPrice price) {
+    public void connectPrice(ProductPrice price) {
         this.price = price;
     }
 
-    public void updateSeller(Seller seller) {
+    public void connectSeller(Seller seller) {
         this.seller = seller;
     }
 
-    public void updateBrand(Brand brand) {
+    public void connectBrand(Brand brand) {
         this.brand = brand;
+    }
+
+    public void update(
+            String name,
+            String slug,
+            String shortDescription,
+            String fullDescription,
+            String status
+    ) {
+        this.name = name;
+        this.slug = slug;
+        this.shortDescription = shortDescription;
+        this.fullDescription = fullDescription;
+        this.status = ProductStatus.valueOf(status);
     }
 
     public void eagerLoad(List<ProductOptionGroup> optionGroups, List<ProductTag> tags, List<ProductCategory> categories) {

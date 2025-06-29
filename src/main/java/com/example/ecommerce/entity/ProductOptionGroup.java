@@ -39,4 +39,9 @@ public class ProductOptionGroup {
         option.addOptionGroup(this);
         options.add(option);
     }
+
+    public void update(String name, Integer displayOrder) {
+        this.name = name;
+        this.displayOrder = displayOrder;
+    }
 }

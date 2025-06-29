@@ -38,16 +38,16 @@ public class ProductUpdateRequest {
     private Long brandId;
     private String status; // ACTIVE, OUT_OF_STOCK, DELETED
 
-    private ProductCreateRequest.ProductDetailDto detail;
-    private ProductCreateRequest.ProductPriceDto price;
+    private ProductUpdateRequest.ProductDetailDto detail;
+    private ProductUpdateRequest.ProductPriceDto price;
     @Builder.Default
-    private List<ProductCreateRequest.ProductCategoryDto> categories = new ArrayList<>();
+    private List<ProductUpdateRequest.ProductCategoryDto> categories = new ArrayList<>();
     @Builder.Default
-    private List<ProductCreateRequest.OptionGroupDto> optionGroups = new ArrayList<>();
+    private List<ProductUpdateRequest.OptionGroupDto> optionGroups = new ArrayList<>();
     @Builder.Default
-    private List<ProductCreateRequest.ImageDto> images = new ArrayList<>();
+    private List<ProductUpdateRequest.ImageDto> images = new ArrayList<>();
     @Builder.Default
-    private List<Long> tagIds = new ArrayList<>();
+    private List<Long> tags = new ArrayList<>();
 
     @Data
     @NoArgsConstructor
@@ -97,7 +97,7 @@ public class ProductUpdateRequest {
         private String name;
         private Integer displayOrder;
         @Builder.Default
-        private List<ProductCreateRequest.OptionDto> options = new ArrayList<>();
+        private List<ProductUpdateRequest.OptionDto> options = new ArrayList<>();
     }
 
     @Data

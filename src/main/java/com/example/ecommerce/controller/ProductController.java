@@ -8,8 +8,8 @@ import com.example.ecommerce.service.command.ProductCommandHandler;
 import com.example.ecommerce.service.dto.ProductDto;
 import com.example.ecommerce.service.query.ProductQuery;
 import com.example.ecommerce.service.query.ProductQueryHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -91,8 +91,8 @@ public class ProductController {
      * @return
      */
     @PutMapping("/{productId}")
-    public ResponseEntity<ApiResponse<?>> updateProduct(@PathVariable Long productId, @ModelAttribute ProductUpdateRequest request) {
-        ProductCommand.UpdateProduct command = productRequestMapper.toUpdateProduct(request);
+    public ResponseEntity<ApiResponse<?>> updateProduct(@PathVariable Long productId, @RequestBody ProductUpdateRequest request) throws Exception {
+        ProductCommand.UpdateProduct command = productRequestMapper.toUpdateCommand(request);
 
         ProductDto.ProductBasic response = commandHandler.updateProduct(productId, command);
 

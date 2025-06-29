@@ -76,13 +76,16 @@ public class ProductQueryRepository {
                 .collect(Collectors.groupingBy(option -> option.getOptionGroup().getId()));
 
         // 2. 각 그룹에 직접 세팅
+
         for (ProductOptionGroup group : optionGroups) {
+            group.getOptions().clear();
             List<ProductOption> relatedOptions = optionsByGroupId.getOrDefault(group.getId(), List.of());
-            group.setOptions(relatedOptions); // 수동으로 options 연결
+            group.getOptions().addAll(relatedOptions); // 수동으로 options 연결
         }
 
         // 4차 조회 - tags
-        List<ProductTag> tags = queryFactory.selectFrom(productTag)
+        List<ProductTag> tags = queryFactory.select(productTag)
+                .from(productTag)
                 .leftJoin(productTag.tag, tag).fetchJoin()
                 .where(productTag.product.id.eq(query.getProductId()))
                 .fetch();

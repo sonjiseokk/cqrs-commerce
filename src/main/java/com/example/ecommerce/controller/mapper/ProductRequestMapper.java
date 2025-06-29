@@ -28,6 +28,6 @@ public interface ProductRequestMapper {
 
     ProductQuery.GetProduct toGetProduct(Long productId);
 
-    ProductCommand.UpdateProduct toUpdateProduct(ProductUpdateRequest request);
+    ProductCommand.UpdateProduct toUpdateCommand(ProductUpdateRequest request);
 }
 

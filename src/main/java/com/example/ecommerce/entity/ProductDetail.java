@@ -46,5 +46,15 @@ public class ProductDetail {
     @JdbcTypeCode(SqlTypes.JSON)
     private String additionalInfo; // JSON object for additional information
 
+    // Helper Method
+    public void update(Double weight, String dimensions, String materials, String countryOfOrigin, String warrantyInfo, String careInstructions, String additionalInfo) {
+        this.weight = weight;
+        this.dimensions = dimensions;
+        this.materials = materials;
+        this.countryOfOrigin = countryOfOrigin;
+        this.warrantyInfo = warrantyInfo;
+        this.careInstructions = careInstructions;
+        this.additionalInfo = additionalInfo;
+    }
 
 }
