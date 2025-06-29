@@ -1,5 +1,6 @@
 package com.example.ecommerce.entity;
 
+import com.example.ecommerce.service.dto.ProductDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,5 +49,13 @@ public class ProductOption {
     // Helper method
     public void addOptionGroup(ProductOptionGroup productOptionGroup) {
         this.optionGroup = productOptionGroup;
+    }
+
+    public void update(String name, BigDecimal additionalPrice, String sku, Integer stock, Integer displayOrder) {
+        this.name = name;
+        this.additionalPrice = additionalPrice;
+        this.sku = sku;
+        this.stock = stock;
+        this.displayOrder = displayOrder;
     }
 }

@@ -41,5 +41,12 @@ public class ProductPrice {
     private BigDecimal taxRate;
 
     // Helper Method
+    public void update(BigDecimal basePrice, BigDecimal salePrice, BigDecimal costPrice, String currency, BigDecimal taxRate) {
+        this.basePrice = basePrice;
+        this.salePrice = salePrice;
+        this.costPrice = costPrice;
+        this.currency = currency;
+        this.taxRate = taxRate;
+    }
 
 }
