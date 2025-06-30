@@ -29,5 +29,7 @@ public interface ProductRequestMapper {
     ProductQuery.GetProduct toGetProduct(Long productId);
 
     ProductCommand.UpdateProduct toUpdateCommand(ProductUpdateRequest request);
+
+    ProductCommand.DeleteProduct toDeleteProduct(Long productId);
 }
 

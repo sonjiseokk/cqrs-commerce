@@ -1,5 +1,6 @@
 package com.example.ecommerce.repository;
 
+import com.example.ecommerce.common.ResourceNotFoundException;
 import com.example.ecommerce.entity.*;
 import com.example.ecommerce.service.dto.ProductDto;
 import com.example.ecommerce.service.query.ProductQuery;
@@ -46,6 +47,7 @@ public class ProductQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     public Optional<Product> getProduct(ProductQuery.GetProduct query) {
+        // 1차 조회 - product
         Product content = queryFactory.select(product)
                 .from(product)
                 .leftJoin(product.price, productPrice).fetchJoin()
@@ -54,7 +56,13 @@ public class ProductQueryRepository {
                 .leftJoin(product.brand, brand).fetchJoin()
                 .leftJoin(product.images, productImage).fetchJoin()
                 .where(product.id.eq(query.getProductId()))
+                .where(product.status.ne(ProductStatus.DELETED))
                 .fetchOne();
+
+        // 제품 없는 경우
+        if (content == null) {
+            return Optional.empty();
+        }
 
         // 2차 조회 - optionGroup
         List<ProductOptionGroup> optionGroups = queryFactory

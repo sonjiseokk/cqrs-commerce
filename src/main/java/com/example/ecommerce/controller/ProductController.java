@@ -101,4 +101,24 @@ public class ProductController {
                 "상품이 성공적으로 수정되었습니다."
         ));
     }
+
+    /**
+     * 상품 삭제
+     * DELETE /api/products/{id}
+     *
+     * 특정 상품을 삭제합니다.
+     * @param productId
+     * @return
+     */
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<ApiResponse<?>> deleteProduct(@PathVariable Long productId) {
+        ProductCommand.DeleteProduct command = productRequestMapper.toDeleteProduct(productId);
+
+        commandHandler.deleteProduct(command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                null,
+                "상품이 성공적으로 삭제되었습니다."
+        ));
+    }
 }

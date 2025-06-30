@@ -98,6 +98,21 @@ public class ProductCommandService implements ProductCommandHandler {
     }
 
     /**
+     * Product 삭제 처리
+     * @param command
+     */
+    @Override
+    @Transactional
+    public void deleteProduct(ProductCommand.DeleteProduct command) {
+        // 해당 제품이 없는 경우 예외 처리
+        Product product = productRepository.findById(command.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("product", command.getProductId()));
+
+        // 삭제 처리 (소프트)
+        product.delete();
+    }
+
+    /**
      * 엔티티 생성
      * <p>
      * - 연관 관계 업데이트
