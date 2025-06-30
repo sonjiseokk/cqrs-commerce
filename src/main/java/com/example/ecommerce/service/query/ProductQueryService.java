@@ -54,7 +54,7 @@ public class ProductQueryService implements ProductQueryHandler {
     public ProductGetResponse getProduct(ProductQuery.GetProduct query) {
         // 1. 다중 조인 단건 조회
         Product product = productQueryRepository.getProduct(query)
-                .orElseThrow(() -> new ResourceNotFoundException("getProduct", query.getProductId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", query.getProductId()));
 
         // ProductDetail DTO 변환
         ProductDto.ProductDetail content = productMapper.toProductDetailDto(product);

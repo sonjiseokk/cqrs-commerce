@@ -82,4 +82,10 @@ public class ProductCommand {
         @Builder.Default
         private List<Long> tags = new ArrayList<>();
     }
+
+    @Data
+    @Builder
+    public static class DeleteProduct {
+        private Long productId;
+    }
 }

@@ -3,6 +3,7 @@ package com.example.ecommerce.controller.advice;
 import com.example.ecommerce.common.ApiResponse;
 import com.example.ecommerce.common.DuplicateSlugException;
 import com.example.ecommerce.common.ErrorResponse;
+import com.example.ecommerce.common.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -57,6 +58,24 @@ public class ProductControllerAdvise {
                 .error(ErrorResponse.Error.builder()
                         .code(String.valueOf(HttpStatus.CONFLICT))
                         .message("중복된 slug로 인해 생성할 수 없습니다.")
+                        .details(details)
+                        .build())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        Map<String, String> details = new HashMap<>();
+        details.put("resourceType", ex.getResourceType());
+        details.put("resourceId", ex.getResourceId());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .success(false)
+                .error(ErrorResponse.Error.builder()
+                        .code(String.valueOf(HttpStatus.NOT_FOUND))
+                        .message("요청한 리소스를 찾을 수 없습니다.")
                         .details(details)
                         .build())
                 .build();
