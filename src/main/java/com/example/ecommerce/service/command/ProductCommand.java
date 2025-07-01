@@ -1,9 +1,11 @@
 package com.example.ecommerce.service.command;
 
 import com.example.ecommerce.service.dto.ProductDto;
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +62,7 @@ public class ProductCommand {
     @Data
     @Builder
     public static class UpdateProduct implements ProductBase {
+        private Long productId;
         private String name;
         private String slug;
         private String shortDescription;
@@ -87,5 +90,17 @@ public class ProductCommand {
     @Builder
     public static class DeleteProduct {
         private Long productId;
+    }
+
+    @Data
+    @Builder
+    public static class UpdateOption {
+        private Long productId;
+        private Long optionId;
+        private String name;
+        private BigDecimal additionalPrice;
+        private String sku;
+        private Integer stock;
+        private Integer displayOrder;
     }
 }

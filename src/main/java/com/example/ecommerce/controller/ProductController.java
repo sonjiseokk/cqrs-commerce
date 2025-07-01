@@ -28,8 +28,9 @@ public class ProductController {
     /**
      * 상품 등록
      * POST /api/products
-     *
+     * <p>
      * 새로운 상품을 등록합니다.
+     *
      * @param request
      * @return
      */
@@ -46,8 +47,9 @@ public class ProductController {
     /**
      * 상품 목록 조회
      * GET /api/products
-     *
+     * <p>
      * 상품 목록을 조회합니다.
+     *
      * @param request
      * @return
      */
@@ -65,8 +67,9 @@ public class ProductController {
     /**
      * 상품 상세 조회
      * GET /api/products/{id}
-     *
+     * <p>
      * 특정 상품의 상세 정보를 조회합니다.
+     *
      * @param productId
      * @return
      */
@@ -85,16 +88,18 @@ public class ProductController {
     /**
      * 상품 수정
      * PUT /api/products/{id}
-     *
+     * <p>
      * 특정 상품 정보를 수정합니다.
+     *
      * @param productId
      * @return
      */
     @PutMapping("/{productId}")
-    public ResponseEntity<ApiResponse<?>> updateProduct(@PathVariable Long productId, @RequestBody ProductUpdateRequest request) throws Exception {
-        ProductCommand.UpdateProduct command = productRequestMapper.toUpdateCommand(request);
+    public ResponseEntity<ApiResponse<?>> updateProduct(@PathVariable Long productId,
+                                                        @RequestBody ProductUpdateRequest request) throws Exception {
+        ProductCommand.UpdateProduct command = productRequestMapper.toUpdateCommand(request, productId);
 
-        ProductDto.ProductBasic response = commandHandler.updateProduct(productId, command);
+        ProductDto.ProductBasic response = commandHandler.updateProduct(command);
 
         return ResponseEntity.ok(ApiResponse.success(
                 response,
@@ -105,8 +110,9 @@ public class ProductController {
     /**
      * 상품 삭제
      * DELETE /api/products/{id}
-     *
+     * <p>
      * 특정 상품을 삭제합니다.
+     *
      * @param productId
      * @return
      */
@@ -119,6 +125,19 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(
                 null,
                 "상품이 성공적으로 삭제되었습니다."
+        ));
+    }
+
+    @PutMapping("/{productId}/options/{optionId}")
+    public ResponseEntity<ApiResponse<?>> updateOption(@PathVariable Long productId,
+                                                       @PathVariable Long optionId,
+                                                       @RequestBody ProductOptionUpdateRequest request) throws Exception {
+        ProductCommand.UpdateOption command = productRequestMapper.toUpdateOption(request, productId, optionId);
+
+        ProductDto.Option response = commandHandler.updateOption(command);
+        return ResponseEntity.ok(ApiResponse.success(
+                response,
+                "상품 옵션이 성공적으로 수정되었습니다."
         ));
     }
 }

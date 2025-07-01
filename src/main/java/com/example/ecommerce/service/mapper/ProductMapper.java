@@ -149,6 +149,9 @@ public interface ProductMapper {
                 .orElse(0.0);
     }
 
+    // Option 변환
+    ProductDto.Option toProductOptionDto(ProductOption productOption);
+
     default ProductDto.RatingSummary toRatingSummary(List<Review> reviews) {
         if (reviews == null || reviews.isEmpty()) {
             return ProductDto.RatingSummary.builder()

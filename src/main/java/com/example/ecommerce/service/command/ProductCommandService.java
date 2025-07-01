@@ -79,14 +79,14 @@ public class ProductCommandService implements ProductCommandHandler {
      */
     @Override
     @Transactional
-    public ProductDto.ProductBasic updateProduct(Long productId, ProductCommand.UpdateProduct command) throws JsonProcessingException {
+    public ProductDto.ProductBasic updateProduct(ProductCommand.UpdateProduct command) throws JsonProcessingException {
         // 0. 패치 조인을 위한 Query 객체 생성
         ProductQuery.GetProduct query = ProductQuery.GetProduct.builder()
-                .productId(productId)
+                .productId(command.getProductId())
                 .build();
 
         // 1. 기존 엔티티 조회
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productRepository.findById(command.getProductId()).orElseThrow();
 
         // 2. 연관 엔티티 업데이트
         updateEntity(command, product);
@@ -112,13 +112,34 @@ public class ProductCommandService implements ProductCommandHandler {
         product.delete();
     }
 
+    @Override
+    @Transactional
+    public ProductDto.Option updateOption(ProductCommand.UpdateOption command) {
+        // Product 존재 여부 체크
+        if (!productRepository.existsById(command.getProductId())) {
+            throw new ResourceNotFoundException("product", command.getProductId());
+        }
+
+        // Option 존재 여부 체크
+        ProductOption option = productOptionRepository.findById(command.getOptionId())
+                .orElseThrow(() -> new ResourceNotFoundException("option", command.getOptionId()));
+
+        // 옵션 업데이트
+        option.update(
+                command.getName(),
+                command.getAdditionalPrice(),
+                command.getSku(),
+                command.getStock(),
+                command.getDisplayOrder()
+        );
+
+        return productMapper.toProductOptionDto(option);
+    }
+
+    // ----------------------------------Helper Method------------------------------------------
     /**
      * 엔티티 생성
-     * <p>
      * - 연관 관계 업데이트
-     *
-     * @param command
-     * @param product
      */
     private void createEntity(ProductCommand.ProductBase command, Product product) {
         // Seller
@@ -214,10 +235,6 @@ public class ProductCommandService implements ProductCommandHandler {
 
     /**
      * 엔티티 업데이트
-     *
-     * @param command
-     * @param product
-     * @throws JsonProcessingException
      */
     private void updateEntity(ProductCommand.UpdateProduct command, Product product) throws JsonProcessingException {
         // Product
@@ -352,6 +369,7 @@ public class ProductCommandService implements ProductCommandHandler {
             }
         }
     }
+
 
     private void updateGroups(List<ProductDto.OptionGroup> optionGroups, Product product) {
         // 현재 옵션 그룹 초기화
