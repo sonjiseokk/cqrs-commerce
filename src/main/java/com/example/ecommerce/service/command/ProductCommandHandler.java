@@ -14,4 +14,6 @@ public interface ProductCommandHandler {
     void deleteOption(ProductCommand.DeleteOption command);
 
     ProductDto.ImageDetail createImage(ProductCommand.CreateImage command);
+
+    void deleteImage(ProductCommand.DeleteImage command);
 }

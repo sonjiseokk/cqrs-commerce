@@ -121,4 +121,11 @@ public class ProductCommand {
         private Integer displayOrder;
         private Long optionId;
     }
+
+    @Data
+    @Builder
+    public static class DeleteImage {
+        private Long productId;
+        private Long imageId;
+    }
 }

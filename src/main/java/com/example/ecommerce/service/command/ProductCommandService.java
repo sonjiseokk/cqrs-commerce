@@ -204,6 +204,26 @@ public class ProductCommandService implements ProductCommandHandler {
         return dto;
     }
 
+    /**
+     * Image 삭제 처리
+     */
+    @Override
+    @Transactional
+    public void deleteImage(ProductCommand.DeleteImage command) {
+        // product 존재 여부 체크
+        if (!productRepository.existsById(command.getProductId())) {
+            throw new ResourceNotFoundException("product", command.getProductId());
+        }
+
+        // Image 존재 여부 체크
+        if (!productImageRepository.existsById(command.getImageId())) {
+            throw new ResourceNotFoundException("image", command.getImageId());
+        }
+
+        // 삭제 수행
+        productImageRepository.deleteById(command.getImageId());
+    }
+
     // ----------------------------------Helper Method------------------------------------------
 
     /**

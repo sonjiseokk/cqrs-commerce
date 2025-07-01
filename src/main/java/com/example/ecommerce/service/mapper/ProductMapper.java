@@ -110,7 +110,7 @@ public interface ProductMapper {
 
         ProductImage primaryImage = images.stream()
                 .filter(ProductImage::isPrimary)
-                .findFirst().get();
+                .findFirst().orElse(images.get(0));
 
         return ProductDto.ImageSummary.builder()
                 .url(primaryImage.getUrl())

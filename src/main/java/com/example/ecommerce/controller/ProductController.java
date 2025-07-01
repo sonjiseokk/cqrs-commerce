@@ -173,4 +173,17 @@ public class ProductController {
                 "상품 이미지가 성공적으로 추가되었습니다."
         ));
     }
+
+    @DeleteMapping("/{productId}/images/{imageId}")
+    public ResponseEntity<ApiResponse<?>> deleteImage(@PathVariable Long productId,
+                                                      @PathVariable Long imageId) {
+        ProductCommand.DeleteImage command = productRequestMapper.toDeleteImageCommand(productId, imageId);
+
+        commandHandler.deleteImage(command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                null,
+                "상품 이미지가 성공적으로 삭제되었습니다."
+        ));
+    }
 }

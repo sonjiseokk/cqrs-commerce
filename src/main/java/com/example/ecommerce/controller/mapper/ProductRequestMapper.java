@@ -35,5 +35,7 @@ public interface ProductRequestMapper {
     ProductCommand.DeleteOption toDeleteOptionCommand(Long productId, Long optionId);
 
     ProductCommand.CreateImage toCreateImageCommand(ProductImageCreateRequest request, Long productId);
+
+    ProductCommand.DeleteImage toDeleteImageCommand(Long productId, Long imageId);
 }
 
