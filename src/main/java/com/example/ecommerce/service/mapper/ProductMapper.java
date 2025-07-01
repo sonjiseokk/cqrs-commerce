@@ -75,6 +75,7 @@ public interface ProductMapper {
     // -------------------------------------------------------------------------
     // Product 요약 변환
     @Mapping(source = "reviews", target = "rating")
+    @Mapping(source = "images", target = "images", qualifiedByName = "toImageDetail")
     ProductDto.ProductDetail toProductDetailDto(Product product);
 
     // Product 상세 변환
@@ -109,11 +110,25 @@ public interface ProductMapper {
 
         ProductImage primaryImage = images.stream()
                 .filter(ProductImage::isPrimary)
-                .findFirst().get();
+                .findFirst().orElse(images.get(0));
 
         return ProductDto.ImageSummary.builder()
                 .url(primaryImage.getUrl())
                 .altText(primaryImage.getAltText())
+                .build();
+    }
+
+    @Named("toImageDetail")
+    default ProductDto.ImageDetail toImageDetail(ProductImage image) {
+        if (image == null) return null;
+
+        return ProductDto.ImageDetail.builder()
+                .id(image.getId())
+                .url(image.getUrl())
+                .altText(image.getAltText())
+                .isPrimary(image.isPrimary())
+                .displayOrder(image.getDisplayOrder())
+                .optionId(image.getOption() != null ? image.getOption().getId() : null)
                 .build();
     }
 
@@ -126,7 +141,7 @@ public interface ProductMapper {
     // CategorySummary 변환
     @Mapping(target = "parent", source = "parent")
     // 재귀처럼 매핑
-    default ProductDto.CategorySummary toCategorySummary(ProductCategory productCategory){
+    default ProductDto.CategorySummary toCategorySummary(ProductCategory productCategory) {
         if (productCategory == null) return null;
 
         Category category = productCategory.getCategory();
@@ -148,6 +163,9 @@ public interface ProductMapper {
                 .average()
                 .orElse(0.0);
     }
+
+    // Option 변환
+    ProductDto.Option toProductOptionDto(ProductOption productOption);
 
     default ProductDto.RatingSummary toRatingSummary(List<Review> reviews) {
         if (reviews == null || reviews.isEmpty()) {
@@ -220,6 +238,7 @@ public interface ProductMapper {
                 .build();
 
     }
+
     // String → Map 변환
     default Map<String, Object> map(String json) {
         try {

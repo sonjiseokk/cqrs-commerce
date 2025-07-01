@@ -1,8 +1,6 @@
 package com.example.ecommerce.controller.mapper;
 
-import com.example.ecommerce.controller.dto.ProductCreateRequest;
-import com.example.ecommerce.controller.dto.ProductListRequest;
-import com.example.ecommerce.controller.dto.ProductUpdateRequest;
+import com.example.ecommerce.controller.dto.*;
 import com.example.ecommerce.service.command.ProductCommand;
 import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.query.ProductQuery;
@@ -15,7 +13,7 @@ public interface ProductRequestMapper {
     ProductCommand.CreateProduct toCreateCommand(ProductCreateRequest request);
 
     @Mapping(target = "pagination", source = "request", qualifiedByName = "toPagination")
-    ProductQuery.ListProducts toListQuery(ProductListRequest request);
+    ProductQuery.ListProducts toListQueryCommand(ProductListRequest request);
 
     @Named("toPagination")
     default PaginationDto.PaginationRequest toPaginationInfo(ProductListRequest request) {
@@ -26,10 +24,18 @@ public interface ProductRequestMapper {
                 .build();
     }
 
-    ProductQuery.GetProduct toGetProduct(Long productId);
+    ProductQuery.GetProduct toGetProductCommand(Long productId);
 
-    ProductCommand.UpdateProduct toUpdateCommand(ProductUpdateRequest request);
+    ProductCommand.UpdateProduct toUpdateCommand(ProductUpdateRequest request, Long productId);
 
-    ProductCommand.DeleteProduct toDeleteProduct(Long productId);
+    ProductCommand.DeleteProduct toDeleteProductCommand(Long productId);
+
+    ProductCommand.UpdateOption toUpdateOptionCommand(ProductOptionUpdateRequest request, Long productId, Long optionId);
+
+    ProductCommand.DeleteOption toDeleteOptionCommand(Long productId, Long optionId);
+
+    ProductCommand.CreateImage toCreateImageCommand(ProductImageCreateRequest request, Long productId);
+
+    ProductCommand.DeleteImage toDeleteImageCommand(Long productId, Long imageId);
 }
 

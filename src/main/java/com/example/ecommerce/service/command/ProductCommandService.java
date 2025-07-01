@@ -79,14 +79,14 @@ public class ProductCommandService implements ProductCommandHandler {
      */
     @Override
     @Transactional
-    public ProductDto.ProductBasic updateProduct(Long productId, ProductCommand.UpdateProduct command) throws JsonProcessingException {
+    public ProductDto.ProductBasic updateProduct(ProductCommand.UpdateProduct command) throws JsonProcessingException {
         // 0. 패치 조인을 위한 Query 객체 생성
         ProductQuery.GetProduct query = ProductQuery.GetProduct.builder()
-                .productId(productId)
+                .productId(command.getProductId())
                 .build();
 
         // 1. 기존 엔티티 조회
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productRepository.findById(command.getProductId()).orElseThrow();
 
         // 2. 연관 엔티티 업데이트
         updateEntity(command, product);
@@ -99,6 +99,7 @@ public class ProductCommandService implements ProductCommandHandler {
 
     /**
      * Product 삭제 처리
+     *
      * @param command
      */
     @Override
@@ -113,12 +114,121 @@ public class ProductCommandService implements ProductCommandHandler {
     }
 
     /**
-     * 엔티티 생성
-     * <p>
-     * - 연관 관계 업데이트
+     * Option 업데이트 처리
      *
      * @param command
-     * @param product
+     * @return
+     */
+    @Override
+    @Transactional
+    public ProductDto.Option updateOption(ProductCommand.UpdateOption command) {
+        // Product 존재 여부 체크
+        if (!productRepository.existsById(command.getProductId())) {
+            throw new ResourceNotFoundException("product", command.getProductId());
+        }
+
+        // Option 존재 여부 체크
+        ProductOption option = productOptionRepository.findById(command.getOptionId())
+                .orElseThrow(() -> new ResourceNotFoundException("option", command.getOptionId()));
+
+        // 옵션 업데이트
+        option.update(
+                command.getName(),
+                command.getAdditionalPrice(),
+                command.getSku(),
+                command.getStock(),
+                command.getDisplayOrder()
+        );
+
+        return productMapper.toProductOptionDto(option);
+    }
+
+    /**
+     * Option 삭제 처리
+     *
+     * @param command
+     */
+    @Override
+    @Transactional
+    public void deleteOption(ProductCommand.DeleteOption command) {
+        // Product 존재 여부 체크
+        if (!productRepository.existsById(command.getProductId())) {
+            throw new ResourceNotFoundException("product", command.getProductId());
+        }
+
+        // Option 존재 여부 체크
+        if (!productOptionRepository.existsById(command.getOptionId())) {
+            throw new ResourceNotFoundException("option", command.getOptionId());
+        }
+
+        // Option 삭제 처리
+        productOptionRepository.deleteById(command.getOptionId());
+    }
+
+    /**
+     * Image 등록 처리
+     *
+     * @param command
+     * @return
+     */
+    @Override
+    public ProductDto.ImageDetail createImage(ProductCommand.CreateImage command) {
+        // Product
+        Product product = productRepository.findById(command.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("product", command.getProductId()));
+
+        // Option
+        // nullable 이므로 유효한 경우에만 체크
+        ProductOption option = null;
+        if (command.getOptionId() != null) {
+            option = productOptionRepository.findById(command.getOptionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("option", command.getOptionId()));
+        }
+
+        // Mapper 사용 위해 DTO로 변환
+        ProductDto.ImageDetail dto = ProductDto.ImageDetail.builder()
+                .id(command.getProductId())
+                .url(command.getUrl())
+                .altText(command.getAltText())
+                .isPrimary(command.isPrimary())
+                .displayOrder(command.getDisplayOrder())
+                .optionId(command.getOptionId())
+                .build();
+
+        // 엔티티 변환
+        ProductImage imageEntity = productMapper.toProductImageEntity(dto, product, option);
+
+        // 저장 및 초기화
+        productImageRepository.save(imageEntity);
+
+        return dto;
+    }
+
+    /**
+     * Image 삭제 처리
+     */
+    @Override
+    @Transactional
+    public void deleteImage(ProductCommand.DeleteImage command) {
+        // product 존재 여부 체크
+        if (!productRepository.existsById(command.getProductId())) {
+            throw new ResourceNotFoundException("product", command.getProductId());
+        }
+
+        // Image 존재 여부 체크
+        if (!productImageRepository.existsById(command.getImageId())) {
+            throw new ResourceNotFoundException("image", command.getImageId());
+        }
+
+        // 삭제 수행
+        productImageRepository.deleteById(command.getImageId());
+    }
+
+    // ----------------------------------Helper Method------------------------------------------
+
+    /**
+     * 엔티티 생성
+     * - 연관 관계 업데이트
      */
     private void createEntity(ProductCommand.ProductBase command, Product product) {
         // Seller
@@ -214,10 +324,6 @@ public class ProductCommandService implements ProductCommandHandler {
 
     /**
      * 엔티티 업데이트
-     *
-     * @param command
-     * @param product
-     * @throws JsonProcessingException
      */
     private void updateEntity(ProductCommand.UpdateProduct command, Product product) throws JsonProcessingException {
         // Product
@@ -352,6 +458,7 @@ public class ProductCommandService implements ProductCommandHandler {
             }
         }
     }
+
 
     private void updateGroups(List<ProductDto.OptionGroup> optionGroups, Product product) {
         // 현재 옵션 그룹 초기화
