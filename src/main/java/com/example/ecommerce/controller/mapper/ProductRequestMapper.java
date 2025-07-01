@@ -34,5 +34,7 @@ public interface ProductRequestMapper {
     ProductCommand.DeleteProduct toDeleteProduct(Long productId);
 
     ProductCommand.UpdateOption toUpdateOption(ProductOptionUpdateRequest request, Long productId, Long optionId);
+
+    ProductCommand.DeleteOption toDeleteOption(Long productId, Long optionId);
 }
 

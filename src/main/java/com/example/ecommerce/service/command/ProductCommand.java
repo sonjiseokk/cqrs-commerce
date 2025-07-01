@@ -103,4 +103,11 @@ public class ProductCommand {
         private Integer stock;
         private Integer displayOrder;
     }
+
+    @Data
+    @Builder
+    public static class DeleteOption {
+        private Long productId;
+        private Long optionId;
+    }
 }

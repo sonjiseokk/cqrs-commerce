@@ -31,8 +31,6 @@ public class ProductController {
      * <p>
      * 새로운 상품을 등록합니다.
      *
-     * @param request
-     * @return
      */
     @PostMapping()
     public ResponseEntity<ApiResponse<?>> createProduct(@RequestBody @Valid ProductCreateRequest request) {
@@ -50,8 +48,6 @@ public class ProductController {
      * <p>
      * 상품 목록을 조회합니다.
      *
-     * @param request
-     * @return
      */
     @GetMapping()
     public ResponseEntity<ApiResponse<?>> getProducts(@ModelAttribute ProductListRequest request) {
@@ -70,8 +66,6 @@ public class ProductController {
      * <p>
      * 특정 상품의 상세 정보를 조회합니다.
      *
-     * @param productId
-     * @return
      */
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<?>> getProduct(@PathVariable Long productId) {
@@ -91,8 +85,6 @@ public class ProductController {
      * <p>
      * 특정 상품 정보를 수정합니다.
      *
-     * @param productId
-     * @return
      */
     @PutMapping("/{productId}")
     public ResponseEntity<ApiResponse<?>> updateProduct(@PathVariable Long productId,
@@ -110,11 +102,9 @@ public class ProductController {
     /**
      * 상품 삭제
      * DELETE /api/products/{id}
-     * <p>
+     *
      * 특정 상품을 삭제합니다.
      *
-     * @param productId
-     * @return
      */
     @DeleteMapping("/{productId}")
     public ResponseEntity<ApiResponse<?>> deleteProduct(@PathVariable Long productId) {
@@ -128,6 +118,12 @@ public class ProductController {
         ));
     }
 
+    /**
+     * 상품 옵션 수정
+     * PUT /api/products/{id}/options/{optionId}
+     *
+     * 특정 상품의 옵션을 수정합니다.
+     */
     @PutMapping("/{productId}/options/{optionId}")
     public ResponseEntity<ApiResponse<?>> updateOption(@PathVariable Long productId,
                                                        @PathVariable Long optionId,
@@ -138,6 +134,25 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(
                 response,
                 "상품 옵션이 성공적으로 수정되었습니다."
+        ));
+    }
+
+    /**
+     * 상품 옵션 삭제
+     * DELETE /api/products/{id}/options/{optionId}
+     *
+     * 특정 상품의 옵션을 삭제합니다.
+     */
+    @DeleteMapping("/{productId}/options/{optionId}")
+    public ResponseEntity<ApiResponse<?>> deleteOption(@PathVariable Long productId,
+                                                       @PathVariable Long optionId) {
+        ProductCommand.DeleteOption command = productRequestMapper.toDeleteOption(productId, optionId);
+
+        commandHandler.deleteOption(command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                null,
+                "상품 옵션이 성공적으로 삭제되었습니다."
         ));
     }
 }

@@ -10,4 +10,6 @@ public interface ProductCommandHandler {
 
     void deleteProduct(ProductCommand.DeleteProduct command);
     ProductDto.Option updateOption(ProductCommand.UpdateOption command);
+
+    void deleteOption(ProductCommand.DeleteOption command);
 }

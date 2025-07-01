@@ -99,6 +99,7 @@ public class ProductCommandService implements ProductCommandHandler {
 
     /**
      * Product 삭제 처리
+     *
      * @param command
      */
     @Override
@@ -112,6 +113,12 @@ public class ProductCommandService implements ProductCommandHandler {
         product.delete();
     }
 
+    /**
+     * Option 업데이트 처리
+     *
+     * @param command
+     * @return
+     */
     @Override
     @Transactional
     public ProductDto.Option updateOption(ProductCommand.UpdateOption command) {
@@ -136,7 +143,25 @@ public class ProductCommandService implements ProductCommandHandler {
         return productMapper.toProductOptionDto(option);
     }
 
+    @Override
+    @Transactional
+    public void deleteOption(ProductCommand.DeleteOption command) {
+        // Product 존재 여부 체크
+        if (!productRepository.existsById(command.getProductId())) {
+            throw new ResourceNotFoundException("product", command.getProductId());
+        }
+
+        // Option 존재 여부 체크
+        if (!productOptionRepository.existsById(command.getOptionId())) {
+            throw new ResourceNotFoundException("option", command.getOptionId());
+        }
+
+        // Option 삭제 처리
+        productOptionRepository.deleteById(command.getOptionId());
+    }
+
     // ----------------------------------Helper Method------------------------------------------
+
     /**
      * 엔티티 생성
      * - 연관 관계 업데이트
