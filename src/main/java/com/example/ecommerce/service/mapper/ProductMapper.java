@@ -75,6 +75,7 @@ public interface ProductMapper {
     // -------------------------------------------------------------------------
     // Product 요약 변환
     @Mapping(source = "reviews", target = "rating")
+    @Mapping(source = "images", target = "images", qualifiedByName = "toImageDetail")
     ProductDto.ProductDetail toProductDetailDto(Product product);
 
     // Product 상세 변환
@@ -117,6 +118,20 @@ public interface ProductMapper {
                 .build();
     }
 
+    @Named("toImageDetail")
+    default ProductDto.ImageDetail toImageDetail(ProductImage image) {
+        if (image == null) return null;
+
+        return ProductDto.ImageDetail.builder()
+                .id(image.getId())
+                .url(image.getUrl())
+                .altText(image.getAltText())
+                .isPrimary(image.isPrimary())
+                .displayOrder(image.getDisplayOrder())
+                .optionId(image.getOption() != null ? image.getOption().getId() : null)
+                .build();
+    }
+
     // BrandSummary 변환
     ProductDto.BrandSummary toBrandSummary(Brand brand);
 
@@ -126,7 +141,7 @@ public interface ProductMapper {
     // CategorySummary 변환
     @Mapping(target = "parent", source = "parent")
     // 재귀처럼 매핑
-    default ProductDto.CategorySummary toCategorySummary(ProductCategory productCategory){
+    default ProductDto.CategorySummary toCategorySummary(ProductCategory productCategory) {
         if (productCategory == null) return null;
 
         Category category = productCategory.getCategory();
@@ -223,6 +238,7 @@ public interface ProductMapper {
                 .build();
 
     }
+
     // String → Map 변환
     default Map<String, Object> map(String json) {
         try {
