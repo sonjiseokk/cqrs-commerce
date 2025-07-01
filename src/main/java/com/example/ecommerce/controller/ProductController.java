@@ -8,7 +8,6 @@ import com.example.ecommerce.service.command.ProductCommandHandler;
 import com.example.ecommerce.service.dto.ProductDto;
 import com.example.ecommerce.service.query.ProductQuery;
 import com.example.ecommerce.service.query.ProductQueryHandler;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +50,7 @@ public class ProductController {
      */
     @GetMapping()
     public ResponseEntity<ApiResponse<?>> getProducts(@ModelAttribute ProductListRequest request) {
-        ProductQuery.ListProducts query = productRequestMapper.toListQuery(request);
+        ProductQuery.ListProducts query = productRequestMapper.toListQueryCommand(request);
 
         ProductListResponse response = queryHandler.getProducts(query);
 
@@ -69,7 +68,7 @@ public class ProductController {
      */
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<?>> getProduct(@PathVariable Long productId) {
-        ProductQuery.GetProduct query = productRequestMapper.toGetProduct(productId);
+        ProductQuery.GetProduct query = productRequestMapper.toGetProductCommand(productId);
 
         ProductGetResponse response = queryHandler.getProduct(query);
 
@@ -108,7 +107,7 @@ public class ProductController {
      */
     @DeleteMapping("/{productId}")
     public ResponseEntity<ApiResponse<?>> deleteProduct(@PathVariable Long productId) {
-        ProductCommand.DeleteProduct command = productRequestMapper.toDeleteProduct(productId);
+        ProductCommand.DeleteProduct command = productRequestMapper.toDeleteProductCommand(productId);
 
         commandHandler.deleteProduct(command);
 
@@ -128,7 +127,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<?>> updateOption(@PathVariable Long productId,
                                                        @PathVariable Long optionId,
                                                        @RequestBody ProductOptionUpdateRequest request) throws Exception {
-        ProductCommand.UpdateOption command = productRequestMapper.toUpdateOption(request, productId, optionId);
+        ProductCommand.UpdateOption command = productRequestMapper.toUpdateOptionCommand(request, productId, optionId);
 
         ProductDto.Option response = commandHandler.updateOption(command);
         return ResponseEntity.ok(ApiResponse.success(
@@ -146,13 +145,32 @@ public class ProductController {
     @DeleteMapping("/{productId}/options/{optionId}")
     public ResponseEntity<ApiResponse<?>> deleteOption(@PathVariable Long productId,
                                                        @PathVariable Long optionId) {
-        ProductCommand.DeleteOption command = productRequestMapper.toDeleteOption(productId, optionId);
+        ProductCommand.DeleteOption command = productRequestMapper.toDeleteOptionCommand(productId, optionId);
 
         commandHandler.deleteOption(command);
 
         return ResponseEntity.ok(ApiResponse.success(
                 null,
                 "상품 옵션이 성공적으로 삭제되었습니다."
+        ));
+    }
+
+    /**
+     * 상품 이미지 추가
+     * POST /api/products/{id}/images
+     * <p>
+     * 특정 상품에 이미지를 추가합니다.
+     */
+    @PostMapping("/{productId}/images")
+    public ResponseEntity<ApiResponse<?>> createImage(@PathVariable Long productId,
+                                                      @RequestBody ProductImageCreateRequest request) {
+        ProductCommand.CreateImage command = productRequestMapper.toCreateImageCommand(request, productId);
+
+        ProductDto.ImageDetail response = commandHandler.createImage(command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                response,
+                "상품 이미지가 성공적으로 추가되었습니다."
         ));
     }
 }

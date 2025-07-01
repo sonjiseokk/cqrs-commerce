@@ -110,4 +110,15 @@ public class ProductCommand {
         private Long productId;
         private Long optionId;
     }
+
+    @Data
+    @Builder
+    public static class CreateImage {
+        private Long productId;
+        private String url;
+        private String altText;
+        private boolean isPrimary;
+        private Integer displayOrder;
+        private Long optionId;
+    }
 }

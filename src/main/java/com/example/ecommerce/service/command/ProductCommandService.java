@@ -143,6 +143,11 @@ public class ProductCommandService implements ProductCommandHandler {
         return productMapper.toProductOptionDto(option);
     }
 
+    /**
+     * Option 삭제 처리
+     *
+     * @param command
+     */
     @Override
     @Transactional
     public void deleteOption(ProductCommand.DeleteOption command) {
@@ -158,6 +163,45 @@ public class ProductCommandService implements ProductCommandHandler {
 
         // Option 삭제 처리
         productOptionRepository.deleteById(command.getOptionId());
+    }
+
+    /**
+     * Image 등록 처리
+     *
+     * @param command
+     * @return
+     */
+    @Override
+    public ProductDto.ImageDetail createImage(ProductCommand.CreateImage command) {
+        // Product
+        Product product = productRepository.findById(command.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("product", command.getProductId()));
+
+        // Option
+        // nullable 이므로 유효한 경우에만 체크
+        ProductOption option = null;
+        if (command.getOptionId() != null) {
+            option = productOptionRepository.findById(command.getOptionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("option", command.getOptionId()));
+        }
+
+        // Mapper 사용 위해 DTO로 변환
+        ProductDto.ImageDetail dto = ProductDto.ImageDetail.builder()
+                .id(command.getProductId())
+                .url(command.getUrl())
+                .altText(command.getAltText())
+                .isPrimary(command.isPrimary())
+                .displayOrder(command.getDisplayOrder())
+                .optionId(command.getOptionId())
+                .build();
+
+        // 엔티티 변환
+        ProductImage imageEntity = productMapper.toProductImageEntity(dto, product, option);
+
+        // 저장 및 초기화
+        productImageRepository.save(imageEntity);
+
+        return dto;
     }
 
     // ----------------------------------Helper Method------------------------------------------
