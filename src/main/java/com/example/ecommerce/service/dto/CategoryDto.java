@@ -26,5 +26,25 @@ public class CategoryDto {
         private List<Category> children = new ArrayList<>();
     }
 
+    @Data
+    @Builder
+    public static class Detail {
+        private Long id;
+        private String name;
+        private String slug;
+        private String description;
+        private Integer level;
+        private String imageUrl;
+        private ParentCategory parent;
+    }
+
+    @Data
+    @Builder
+    public static class ParentCategory {
+        private Long id;
+        private String name;
+        private String slug;
+    }
+
 
 }

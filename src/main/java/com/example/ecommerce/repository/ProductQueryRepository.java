@@ -3,6 +3,7 @@ package com.example.ecommerce.repository;
 import com.example.ecommerce.common.ResourceNotFoundException;
 import com.example.ecommerce.entity.*;
 import com.example.ecommerce.service.dto.ProductDto;
+import com.example.ecommerce.service.query.CategoryQuery;
 import com.example.ecommerce.service.query.ProductQuery;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
@@ -10,20 +11,19 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.example.ecommerce.entity.QBrand.brand;
@@ -36,6 +36,7 @@ import static com.example.ecommerce.entity.QProductOption.productOption;
 import static com.example.ecommerce.entity.QProductOptionGroup.productOptionGroup;
 import static com.example.ecommerce.entity.QProductPrice.productPrice;
 import static com.example.ecommerce.entity.QProductTag.productTag;
+import static com.example.ecommerce.entity.QReview.review;
 import static com.example.ecommerce.entity.QSeller.seller;
 import static com.example.ecommerce.entity.QTag.tag;
 import static com.querydsl.jpa.JPAExpressions.*;
@@ -226,6 +227,117 @@ public class ProductQueryRepository {
 
 
         return new PageImpl<>(content, pageable, totalCount);
+    }
+
+    public Page<ProductDto.ProductSummary> getCategoriesProducts(List<Long> categoryIds, CategoryQuery.CategoryProducts query) {
+        // Pageable 변환
+        Pageable pageable = query.getRequest().toPageable();
+
+        // 정렬 기준 추출
+        OrderSpecifier<?>[] orderSpecifiers = toOrderSpecifiers(pageable.getSort());
+
+        // 1. 특정 카테고리들에 속한 Product ID 리스트
+        List<Long> productIds = queryFactory
+                .select(product.id)
+                .from(product)
+                .join(productCategory).on(product.id.eq(productCategory.product.id))
+                .where(productCategory.category.id.in(categoryIds))
+                .orderBy(orderSpecifiers)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 2. product 기본 조회 (price, detail, seller, brand)
+        List<Product> products = queryFactory
+                .selectFrom(product)
+                .leftJoin(product.price, productPrice).fetchJoin()
+                .leftJoin(product.detail, productDetail).fetchJoin()
+                .leftJoin(product.seller, seller).fetchJoin()
+                .leftJoin(product.brand, brand).fetchJoin()
+                .leftJoin(product.images, productImage).fetchJoin()
+                .where(product.id.in(productIds))
+                .fetch();
+
+        // 3. productIds 에 속한 모든 리뷰 flat 조회
+        List<Review> reviews = queryFactory.selectFrom(review)
+                .leftJoin(review.product, product)
+                .where(review.product.id.in(productIds))
+                .fetch();
+
+        // 3-1. productId 기준으로 그룹화
+        Map<Long, List<Review>> reviewMap = reviews.stream()
+                .collect(Collectors.groupingBy(r -> r.getProduct().getId()));
+
+        // 4. productIds에 속한 모든 이미지 flat 조회
+        List<ProductImage> productImages = queryFactory
+                .selectFrom(productImage)
+                .where(productImage.product.id.in(productIds))
+                .orderBy(productImage.displayOrder.asc())
+                .fetch();
+
+        // 4-1. productId 기준으로 그룹화
+        // primary image 우선 탐색, 없다면 1번째 이미지
+        Map<Long, ProductImage> imageMap = productImages.stream()
+                .collect(Collectors.groupingBy(
+                        img -> img.getProduct().getId(),
+                        Collectors.collectingAndThen(Collectors.toList(), imgs -> {
+                            return imgs.stream()
+                                    .filter(ProductImage::isPrimary) // isPrimary == true 인 경우
+                                    .findFirst()
+                                    .orElse(imgs.get(0)); // 없으면 displayOrder 기준 첫 번째
+                        })
+                ));
+
+
+        // 5. 다단계 조회 + Map 묶기
+        List<ProductDto.ProductSummary> content = products.stream()
+                .map(p -> {
+                    // 각 Product에 맞는 리뷰
+                    List<Review> productReviews = reviewMap.getOrDefault(p.getId(), List.of());
+                    double avgRating = productReviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+                    int reviewCount = productReviews.size();
+
+                    // 각 프로덕트의 primary image
+                    ProductImage image = imageMap.get(p.getId());
+
+                    return ProductDto.ProductSummary.builder()
+                            .id(p.getId())
+                            .name(p.getName())
+                            .slug(p.getSlug())
+                            .shortDescription(p.getShortDescription())
+                            .basePrice(p.getPrice().getBasePrice())
+                            .salePrice(p.getPrice().getSalePrice())
+                            .currency(p.getPrice().getCurrency())
+                            .primaryImage(image != null ? ProductDto.ImageSummary.builder()
+                                    .url(image.getUrl())
+                                    .altText(image.getAltText())
+                                    .build() : null)
+                            .brand(ProductDto.BrandSummary.builder()
+                                    .id(p.getBrand().getId())
+                                    .name(p.getBrand().getName())
+                                    .build())
+                            .seller(ProductDto.SellerSummary.builder()
+                                    .id(p.getSeller().getId())
+                                    .name(p.getSeller().getName())
+                                    .build())
+                            .rating(avgRating)
+                            .reviewCount(reviewCount)
+                            .inStock(p.getStatus() == ProductStatus.ACTIVE)
+                            .status(p.getStatus().name())
+                            .createdAt(p.getCreatedAt())
+                            .build();
+                })
+                .toList();
+
+        // 6. 카운트 쿼리
+        Long total = queryFactory
+                .select(product.countDistinct())
+                .from(product)
+                .join(productCategory).on(product.id.eq(productCategory.product.id))
+                .where(productCategory.category.id.in(categoryIds))
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     private BooleanExpression statusEq(String status) {

@@ -11,4 +11,9 @@ import org.mapstruct.ReportingPolicy;
 public interface CategoryMapper {
     @Mapping(target = "children", ignore = true)
     CategoryDto.Category toCategoryDto(Category category);
+
+    @Mapping(source = "parent", target = "parent")
+    CategoryDto.Detail toCategoryDetail(Category category);
+
+    CategoryDto.ParentCategory toParentCategory(Category category);
 }
