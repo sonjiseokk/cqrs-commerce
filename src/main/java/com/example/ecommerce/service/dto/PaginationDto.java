@@ -15,8 +15,10 @@ public class PaginationDto {
     @AllArgsConstructor
     @Builder
     public static class PaginationRequest {
-        private int page;
-        private int size;
+        @Builder.Default
+        private int page = 1;
+        @Builder.Default
+        private int size = 10;
         @Builder.Default
         private String sort = "created_at:desc";
 
