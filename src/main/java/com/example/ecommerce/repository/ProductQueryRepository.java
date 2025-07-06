@@ -340,6 +340,192 @@ public class ProductQueryRepository {
         return new PageImpl<>(content, pageable, total);
     }
 
+    public List<ProductDto.ProductSummary> getNewProducts() {
+        // 1. product 기본 조회 (price, detail, seller, brand)
+        List<Product> products = queryFactory
+                .selectFrom(product)
+                .leftJoin(product.price, productPrice).fetchJoin()
+                .leftJoin(product.detail, productDetail).fetchJoin()
+                .leftJoin(product.seller, seller).fetchJoin()
+                .leftJoin(product.brand, brand).fetchJoin()
+                .orderBy(product.createdAt.desc(), product.id.desc())   // tie-break
+                .limit(5)
+                .fetch();
+
+        // 2. ID 값만 추출
+        List<Long> productIds = products.stream()
+                .map(Product::getId)
+                .toList();
+
+        // 3. productIds 에 속한 모든 리뷰 flat 조회
+        List<Review> reviews = queryFactory
+                .selectFrom(review)
+                .join(review.product, product)
+                .where(product.id.in(productIds))
+                .fetch();
+
+        // 3-1. productId 기준으로 그룹화
+        Map<Long, List<Review>> reviewMap = reviews.stream()
+                .collect(Collectors.groupingBy(r -> r.getProduct().getId()));
+
+        // 4. productIds에 속한 모든 이미지 flat 조회
+        List<ProductImage> productImages = queryFactory
+                .selectFrom(productImage)
+                .where(productImage.product.id.in(productIds))
+                .orderBy(productImage.displayOrder.asc())
+                .fetch();
+
+        // 4-1. productId 기준으로 그룹화
+        // primary image 우선 탐색, 없다면 1번째 이미지
+        Map<Long, ProductImage> imageMap = productImages.stream()
+                .collect(Collectors.groupingBy(
+                        img -> img.getProduct().getId(),
+                        Collectors.collectingAndThen(Collectors.toList(), imgs -> {
+                            return imgs.stream()
+                                    .filter(ProductImage::isPrimary) // isPrimary == true 인 경우
+                                    .findFirst()
+                                    .orElse(imgs.get(0)); // 없으면 displayOrder 기준 첫 번째
+                        })
+                ));
+
+        // 5. 다단계 조회 + Map 묶기
+        List<ProductDto.ProductSummary> content = products.stream()
+                .map(p -> {
+                    // 각 Product에 맞는 리뷰
+                    List<Review> productReviews = reviewMap.getOrDefault(p.getId(), List.of());
+                    double avgRating = productReviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+                    int reviewCount = productReviews.size();
+
+                    // 각 프로덕트의 primary image
+                    ProductImage image = imageMap.get(p.getId());
+
+                    return ProductDto.ProductSummary.builder()
+                            .id(p.getId())
+                            .name(p.getName())
+                            .slug(p.getSlug())
+                            .shortDescription(p.getShortDescription())
+                            .basePrice(p.getPrice().getBasePrice())
+                            .salePrice(p.getPrice().getSalePrice())
+                            .currency(p.getPrice().getCurrency())
+                            .primaryImage(image != null ? ProductDto.ImageSummary.builder()
+                                    .url(image.getUrl())
+                                    .altText(image.getAltText())
+                                    .build() : null)
+                            .brand(ProductDto.BrandSummary.builder()
+                                    .id(p.getBrand().getId())
+                                    .name(p.getBrand().getName())
+                                    .build())
+                            .seller(ProductDto.SellerSummary.builder()
+                                    .id(p.getSeller().getId())
+                                    .name(p.getSeller().getName())
+                                    .build())
+                            .rating(avgRating)
+                            .reviewCount(reviewCount)
+                            .inStock(p.getStatus() == ProductStatus.ACTIVE)
+                            .status(p.getStatus().name())
+                            .createdAt(p.getCreatedAt())
+                            .build();
+                })
+                .toList();
+
+        return content;
+    }
+
+    public List<ProductDto.ProductSummary> getPopularProducts() {
+        // 1. 상위 5개의 리뷰 많은 productIds 조회
+        List<Long> productIds = queryFactory
+                .select(review.product.id)
+                .from(review)
+                .groupBy(review.product.id)
+                .orderBy(review.count().desc())
+                .limit(5)
+                .fetch();
+
+        // 리뷰가 없다면 예외처리
+        if (productIds.isEmpty()) return List.of();
+
+        // 2. 실제 Product 조회
+        List<Product> products = queryFactory.select(product)
+                .from(product)
+                .where(product.id.in(productIds))
+                .fetch();
+
+        // 3. productIds 에 속한 모든 리뷰 flat 조회
+        List<Review> reviews = queryFactory
+                .selectFrom(review)
+                .join(review.product, product)
+                .where(product.id.in(productIds))
+                .fetch();
+
+        // 3-1. productId 기준으로 그룹화
+        Map<Long, List<Review>> reviewMap = reviews.stream()
+                .collect(Collectors.groupingBy(r -> r.getProduct().getId()));
+
+        // 4. productIds에 속한 모든 이미지 flat 조회
+        List<ProductImage> productImages = queryFactory
+                .selectFrom(productImage)
+                .where(productImage.product.id.in(productIds))
+                .orderBy(productImage.displayOrder.asc())
+                .fetch();
+
+        // 4-1. productId 기준으로 그룹화
+        // primary image 우선 탐색, 없다면 1번째 이미지
+        Map<Long, ProductImage> imageMap = productImages.stream()
+                .collect(Collectors.groupingBy(
+                        img -> img.getProduct().getId(),
+                        Collectors.collectingAndThen(Collectors.toList(), imgs -> {
+                            return imgs.stream()
+                                    .filter(ProductImage::isPrimary) // isPrimary == true 인 경우
+                                    .findFirst()
+                                    .orElse(imgs.get(0)); // 없으면 displayOrder 기준 첫 번째
+                        })
+                ));
+
+        // 5. 다단계 조회 + Map 묶기
+        List<ProductDto.ProductSummary> content = products.stream()
+                .map(p -> {
+                    // 각 Product에 맞는 리뷰
+                    List<Review> productReviews = reviewMap.getOrDefault(p.getId(), List.of());
+                    double avgRating = productReviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+                    int reviewCount = productReviews.size();
+
+                    // 각 프로덕트의 primary image
+                    ProductImage image = imageMap.get(p.getId());
+
+                    return ProductDto.ProductSummary.builder()
+                            .id(p.getId())
+                            .name(p.getName())
+                            .slug(p.getSlug())
+                            .shortDescription(p.getShortDescription())
+                            .basePrice(p.getPrice().getBasePrice())
+                            .salePrice(p.getPrice().getSalePrice())
+                            .currency(p.getPrice().getCurrency())
+                            .primaryImage(image != null ? ProductDto.ImageSummary.builder()
+                                    .url(image.getUrl())
+                                    .altText(image.getAltText())
+                                    .build() : null)
+                            .brand(ProductDto.BrandSummary.builder()
+                                    .id(p.getBrand().getId())
+                                    .name(p.getBrand().getName())
+                                    .build())
+                            .seller(ProductDto.SellerSummary.builder()
+                                    .id(p.getSeller().getId())
+                                    .name(p.getSeller().getName())
+                                    .build())
+                            .rating(avgRating)
+                            .reviewCount(reviewCount)
+                            .inStock(p.getStatus() == ProductStatus.ACTIVE)
+                            .status(p.getStatus().name())
+                            .createdAt(p.getCreatedAt())
+                            .build();
+                })
+                .toList();
+
+        return content;
+    }
+
+    // -----------------------------------------------------
+
     private BooleanExpression statusEq(String status) {
         return status == null ? null : product.status.eq(ProductStatus.valueOf(status.toUpperCase()));
     }

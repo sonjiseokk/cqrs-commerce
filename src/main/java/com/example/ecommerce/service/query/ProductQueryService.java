@@ -68,4 +68,13 @@ public class ProductQueryService implements ProductQueryHandler {
         return new ProductGetResponse(content);
     }
 
+    @Override
+    public List<ProductDto.ProductSummary> getNewProducts() {
+        return productQueryRepository.getNewProducts();
+    }
+
+    @Override
+    public List<ProductDto.ProductSummary> getPopularProducts() {
+        return productQueryRepository.getPopularProducts();
+    }
 }
