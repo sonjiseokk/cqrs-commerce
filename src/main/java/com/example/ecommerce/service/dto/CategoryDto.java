@@ -46,5 +46,16 @@ public class CategoryDto {
         private String slug;
     }
 
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class FeaturedCategory {
+        private Long id;
+        private String name;
+        private String slug;
+        private String imageUrl;
+        private Long productCount;
+    }
 
 }
