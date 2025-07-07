@@ -44,7 +44,8 @@ public class Review {
     private LocalDateTime updatedAt;
 
     @Column(name = "verified_purchase", nullable = false)
-    private boolean verifiedPurchase;
+    @Builder.Default
+    private boolean verifiedPurchase = false;
 
     @Column(name = "helpful_votes", nullable = false)
     @Builder.Default

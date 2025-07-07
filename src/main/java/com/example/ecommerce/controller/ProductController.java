@@ -174,6 +174,12 @@ public class ProductController {
         ));
     }
 
+    /**
+     * 상품 이미지 추가
+     * DELETE /api/products/{id}/images/{imageId}
+     * <p>
+     * 특정 상품의 특정 이미지를 삭제합니다.
+     */
     @DeleteMapping("/{productId}/images/{imageId}")
     public ResponseEntity<ApiResponse<?>> deleteImage(@PathVariable Long productId,
                                                       @PathVariable Long imageId) {
