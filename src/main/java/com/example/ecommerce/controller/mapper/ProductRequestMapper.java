@@ -10,13 +10,13 @@ import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface ProductRequestMapper {
-    ProductCommand.CreateProduct toCreateCommand(ProductCreateRequest request);
+    ProductCommand.CreateProduct toCreateCommand(ProductRequest.Product request);
 
     @Mapping(target = "pagination", source = "request", qualifiedByName = "toPagination")
-    ProductQuery.ListProducts toListQueryCommand(ProductListRequest request);
+    ProductQuery.ListProducts toListQueryCommand(ProductRequest.ListRequest request);
 
     @Named("toPagination")
-    default PaginationDto.PaginationRequest toPaginationInfo(ProductListRequest request) {
+    default PaginationDto.PaginationRequest toPaginationInfo(ProductRequest.ListRequest request) {
         return PaginationDto.PaginationRequest.builder()
                 .page(request.getPage())
                 .size(request.getPerPage())
@@ -26,15 +26,15 @@ public interface ProductRequestMapper {
 
     ProductQuery.GetProduct toGetProductCommand(Long productId);
 
-    ProductCommand.UpdateProduct toUpdateCommand(ProductUpdateRequest request, Long productId);
+    ProductCommand.UpdateProduct toUpdateCommand(ProductRequest.Product request, Long productId);
 
     ProductCommand.DeleteProduct toDeleteProductCommand(Long productId);
 
-    ProductCommand.UpdateOption toUpdateOptionCommand(ProductOptionUpdateRequest request, Long productId, Long optionId);
+    ProductCommand.UpdateOption toUpdateOptionCommand(ProductRequest.OptionDto request, Long productId, Long optionId);
 
     ProductCommand.DeleteOption toDeleteOptionCommand(Long productId, Long optionId);
 
-    ProductCommand.CreateImage toCreateImageCommand(ProductImageCreateRequest request, Long productId);
+    ProductCommand.CreateImage toCreateImageCommand(ProductRequest.ImageDto request, Long productId);
 
     ProductCommand.DeleteImage toDeleteImageCommand(Long productId, Long imageId);
 }

@@ -1,8 +1,7 @@
 package com.example.ecommerce.service.query;
 
 import com.example.ecommerce.common.ResourceNotFoundException;
-import com.example.ecommerce.controller.dto.ProductGetResponse;
-import com.example.ecommerce.controller.dto.ProductListResponse;
+import com.example.ecommerce.controller.dto.ProductResponse;
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.repository.ProductQueryRepository;
 import com.example.ecommerce.repository.ProductRepository;
@@ -15,9 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.module.ResolutionException;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -30,12 +27,8 @@ public class ProductQueryService implements ProductQueryHandler {
     private final ProductQueryRepository productQueryRepository;
 
     @Override
-    public ProductListResponse getProducts(ProductQuery.ListProducts query) {
-        Page<Product> result = queryRepository.search(query);
-
-        List<ProductDto.ProductSummary> content = result.stream()
-                .map(productMapper::toProductSummaryDto)
-                .toList();
+    public ProductResponse.GetProductList getProducts(ProductQuery.ListProducts query) {
+        Page<ProductDto.ProductSummary> result = queryRepository.search(query);
 
         PaginationDto.PaginationInfo paginationInfo = PaginationDto.PaginationInfo.builder()
                 .totalItems((int) result.getTotalElements())
@@ -44,14 +37,14 @@ public class ProductQueryService implements ProductQueryHandler {
                 .perPage(result.getSize())
                 .build();
 
-        return ProductListResponse.builder()
-                .items(content)
+        return ProductResponse.GetProductList.builder()
+                .items(result.getContent())
                 .pagination(paginationInfo)
                 .build();
     }
 
     @Override
-    public ProductGetResponse getProduct(ProductQuery.GetProduct query) {
+    public ProductResponse.GetProduct getProduct(ProductQuery.GetProduct query) {
         // 1. 다중 조인 단건 조회
         Product product = productQueryRepository.getProduct(query)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", query.getProductId()));
@@ -65,7 +58,7 @@ public class ProductQueryService implements ProductQueryHandler {
         // 3. 관련 상품 리스트 Setter 주입
         content.setRelatedProducts(relatedProducts);
 
-        return new ProductGetResponse(content);
+        return new ProductResponse.GetProduct(content);
     }
 
     @Override

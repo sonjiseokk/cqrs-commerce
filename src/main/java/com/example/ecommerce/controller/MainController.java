@@ -1,7 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
-import com.example.ecommerce.controller.dto.MainPageResponse;
+import com.example.ecommerce.controller.dto.ProductResponse;
 import com.example.ecommerce.service.query.MainQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class MainController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<?>> main() {
-        MainPageResponse response = mainQueryService.main();
+        ProductResponse.MainPage response = mainQueryService.main();
 
         return ResponseEntity.ok(ApiResponse.success(
                 response,

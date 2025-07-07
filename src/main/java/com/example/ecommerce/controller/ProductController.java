@@ -32,7 +32,7 @@ public class ProductController {
      *
      */
     @PostMapping()
-    public ResponseEntity<ApiResponse<?>> createProduct(@RequestBody @Valid ProductCreateRequest request) {
+    public ResponseEntity<ApiResponse<?>> createProduct(@RequestBody @Valid ProductRequest.Product request) {
         ProductCommand.CreateProduct command = productRequestMapper.toCreateCommand(request);
 
         ProductDto.ProductBasic response = commandHandler.createProduct(command);
@@ -49,10 +49,10 @@ public class ProductController {
      *
      */
     @GetMapping()
-    public ResponseEntity<ApiResponse<?>> getProducts(@ModelAttribute ProductListRequest request) {
+    public ResponseEntity<ApiResponse<?>> getProducts(@ModelAttribute ProductRequest.ListRequest request) {
         ProductQuery.ListProducts query = productRequestMapper.toListQueryCommand(request);
 
-        ProductListResponse response = queryHandler.getProducts(query);
+        ProductResponse.GetProductList response = queryHandler.getProducts(query);
 
         return ResponseEntity.ok(ApiResponse.success(
                 response,
@@ -70,7 +70,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<?>> getProduct(@PathVariable Long productId) {
         ProductQuery.GetProduct query = productRequestMapper.toGetProductCommand(productId);
 
-        ProductGetResponse response = queryHandler.getProduct(query);
+        ProductResponse.GetProduct response = queryHandler.getProduct(query);
 
         return ResponseEntity.ok(ApiResponse.success(
                 response,
@@ -87,7 +87,7 @@ public class ProductController {
      */
     @PutMapping("/{productId}")
     public ResponseEntity<ApiResponse<?>> updateProduct(@PathVariable Long productId,
-                                                        @RequestBody ProductUpdateRequest request) throws Exception {
+                                                        @RequestBody ProductRequest.Product request) throws Exception {
         ProductCommand.UpdateProduct command = productRequestMapper.toUpdateCommand(request, productId);
 
         ProductDto.ProductBasic response = commandHandler.updateProduct(command);
@@ -126,7 +126,7 @@ public class ProductController {
     @PutMapping("/{productId}/options/{optionId}")
     public ResponseEntity<ApiResponse<?>> updateOption(@PathVariable Long productId,
                                                        @PathVariable Long optionId,
-                                                       @RequestBody ProductOptionUpdateRequest request) throws Exception {
+                                                       @RequestBody ProductRequest.OptionDto request) throws Exception {
         ProductCommand.UpdateOption command = productRequestMapper.toUpdateOptionCommand(request, productId, optionId);
 
         ProductDto.Option response = commandHandler.updateOption(command);
@@ -163,7 +163,7 @@ public class ProductController {
      */
     @PostMapping("/{productId}/images")
     public ResponseEntity<ApiResponse<?>> createImage(@PathVariable Long productId,
-                                                      @RequestBody ProductImageCreateRequest request) {
+                                                      @RequestBody ProductRequest.ImageDto request) {
         ProductCommand.CreateImage command = productRequestMapper.toCreateImageCommand(request, productId);
 
         ProductDto.ImageDetail response = commandHandler.createImage(command);

@@ -1,7 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
-import com.example.ecommerce.controller.dto.CategoryGetProducts;
+import com.example.ecommerce.controller.dto.ProductResponse;
 import com.example.ecommerce.controller.mapper.CategoryRequestMapper;
 import com.example.ecommerce.service.dto.CategoryDto;
 import com.example.ecommerce.service.dto.PaginationDto;
@@ -37,7 +37,7 @@ public class CategoryController {
                                                                   @ModelAttribute PaginationDto.PaginationRequest request) {
         CategoryQuery.CategoryProducts query = categoryRequestMapper.toCategoryProducts(categoryId, includeSubcategories, request);
 
-        CategoryGetProducts response = categoryQueryHandler.getCategoryProducts(query);
+        ProductResponse.CategoryProducts response = categoryQueryHandler.getCategoryProducts(query);
 
         return ResponseEntity.ok(ApiResponse.success(
                 response,

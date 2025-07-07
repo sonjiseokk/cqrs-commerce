@@ -1,7 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
-import com.example.ecommerce.controller.dto.ReviewCreateRequest;
+import com.example.ecommerce.controller.dto.ReviewRequest;
 import com.example.ecommerce.controller.mapper.ReviewRequestHandler;
 import com.example.ecommerce.service.command.ReviewCommand;
 import com.example.ecommerce.service.command.ReviewCommandHandler;
@@ -54,7 +54,7 @@ public class ReviewController {
 
     @PostMapping("/{productId}/reviews")
     public ResponseEntity<ApiResponse<?>> createReview(@PathVariable Long productId,
-                                                       @RequestBody ReviewCreateRequest request) {
+                                                       @RequestBody ReviewRequest.Review request) {
         // :TODO 유저 ID 받는 부분 편집하기
         ReviewCommand.CreateReview query = reviewRequestHandler.toCreateReviewQuery(
                 productId,
