@@ -13,14 +13,6 @@ public class ReviewQuery {
         private PaginationDto.PaginationRequest pagination;
     }
 
-    @Data
-    @Builder
-    public static class CategoryProducts {
-        private Long categoryId;
-        @Builder.Default
-        private boolean includeSubCategories = true;
-        private PaginationDto.PaginationRequest request;
-    }
 
 
 }
