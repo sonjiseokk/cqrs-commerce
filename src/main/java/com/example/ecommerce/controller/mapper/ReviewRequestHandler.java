@@ -1,5 +1,6 @@
 package com.example.ecommerce.controller.mapper;
 
+import com.example.ecommerce.service.command.ReviewCommand;
 import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.query.ReviewQuery;
 import org.mapstruct.Mapper;
@@ -8,4 +9,9 @@ import org.mapstruct.Mapper;
 public interface ReviewRequestHandler {
     ReviewQuery.ListReviews toListReviewsQuery(Long productId, Integer rating, PaginationDto.PaginationRequest pagination);
 
+    ReviewCommand.CreateReview toCreateReviewQuery(Long productId,
+                                                   Long userId,
+                                                   Integer rating,
+                                                   String title,
+                                                   String content);
 }

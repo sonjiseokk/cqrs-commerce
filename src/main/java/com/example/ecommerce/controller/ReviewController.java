@@ -1,7 +1,10 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
+import com.example.ecommerce.controller.dto.ReviewCreateRequest;
 import com.example.ecommerce.controller.mapper.ReviewRequestHandler;
+import com.example.ecommerce.service.command.ReviewCommand;
+import com.example.ecommerce.service.command.ReviewCommandHandler;
 import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.dto.ReviewDto;
 import com.example.ecommerce.service.query.ReviewQuery;
@@ -16,7 +19,14 @@ import org.springframework.web.bind.annotation.*;
 public class ReviewController {
     private final ReviewRequestHandler reviewRequestHandler;
     private final ReviewQueryHandler reviewQueryHandler;
+    private final ReviewCommandHandler reviewCommandHandler;
 
+    /**
+     * 상품 리뷰 조회
+     * GET /api/products/{id}/reviews
+     *
+     * 특정 상품의 리뷰 목록을 조회합니다.
+     */
     @GetMapping("/{productId}/reviews")
     public ResponseEntity<ApiResponse<?>> getReviews(@PathVariable Long productId,
                                                      @RequestParam(required = false, defaultValue = "1") Integer page,
@@ -39,6 +49,25 @@ public class ReviewController {
         return ResponseEntity.ok(ApiResponse.success(
                 response,
                 "상품 리뷰를 성공적으로 조회했습니다."
+        ));
+    }
+
+    @PostMapping("/{productId}/reviews")
+    public ResponseEntity<ApiResponse<?>> createReview(@PathVariable Long productId,
+                                                       @RequestBody ReviewCreateRequest request) {
+        // :TODO 유저 ID 받는 부분 편집하기
+        ReviewCommand.CreateReview query = reviewRequestHandler.toCreateReviewQuery(
+                productId,
+                1L,
+                request.getRating(),
+                request.getTitle(),
+                request.getContent());
+
+        ReviewDto.Review response = reviewCommandHandler.createReview(query);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                response,
+                "리뷰가 성공적으로 등록되었습니다."
         ));
     }
 }
