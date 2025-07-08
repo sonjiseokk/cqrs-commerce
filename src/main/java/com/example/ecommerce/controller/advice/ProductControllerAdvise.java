@@ -86,7 +86,7 @@ public class ProductControllerAdvise {
                 .success(false)
                 .error(ErrorResponse.Error.builder()
                         .code(String.valueOf(HttpStatus.FORBIDDEN))
-                        .message("다른 사용자의 리뷰를 수정할 권한이 없습니다.")
+                        .message(ex.getMessage())
                         .build())
                 .build();
 

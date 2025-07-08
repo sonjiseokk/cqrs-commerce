@@ -7,4 +7,6 @@ public interface ReviewCommandHandler {
     ReviewDto.Review createReview(ReviewCommand.CreateReview command);
 
     ReviewDto.UpdateReview updateReview(ReviewCommand.UpdateReview command) throws UnauthorizedReviewException;
+
+    void deleteReview(ReviewCommand.DeleteReview command);
 }

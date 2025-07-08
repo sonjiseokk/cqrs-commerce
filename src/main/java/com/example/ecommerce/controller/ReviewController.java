@@ -84,6 +84,19 @@ public class ReviewController {
                 response,
                 "리뷰가 성공적으로 수정되었습니다."
         ));
+    }
+
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<ApiResponse<?>> deleteReview(@PathVariable Long reviewId) {
+        // :TODO 유저 ID 받는 부분 편집하기
+        ReviewCommand.DeleteReview command = reviewRequestHandler.toDeleteReviewCommand(reviewId, 1L);
+
+        reviewCommandHandler.deleteReview(command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                null,
+                "리뷰가 성공적으로 삭제되었습니다."
+        ));
 
     }
 }

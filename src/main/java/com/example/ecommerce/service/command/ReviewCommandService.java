@@ -56,7 +56,7 @@ public class ReviewCommandService implements ReviewCommandHandler {
 
         // Exception : 작성자가 아닌 경우
         if (review.getUser().getId() != user.getId()) {
-            throw new UnauthorizedReviewException();
+            throw new UnauthorizedReviewException("다른 사용자의 리뷰를 수정할 권한이 없습니다.");
         }
 
         review.update(
@@ -69,5 +69,24 @@ public class ReviewCommandService implements ReviewCommandHandler {
         reviewRepository.save(review);
 
         return reviewMapper.toUpdateReview(review);
+    }
+
+    @Override
+    @Transactional
+    public void deleteReview(ReviewCommand.DeleteReview command) {
+        // User 조회
+        User user = userRepository.findById(command.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("user", command.getUserId()));
+
+        // Review 조회
+        Review review = reviewRepository.findByIdWithUser(command.getReviewId())
+                .orElseThrow(() -> new ResourceNotFoundException("review", command.getReviewId()));
+
+        // Exception : 작성자가 아닌 경우
+        if (review.getUser().getId() != user.getId()) {
+            throw new UnauthorizedReviewException("다른 사용자의 리뷰를 삭제할 권한이 없습니다.");
+        }
+
+        reviewRepository.deleteById(command.getReviewId());
     }
 }

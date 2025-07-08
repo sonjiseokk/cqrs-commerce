@@ -17,4 +17,6 @@ public interface ReviewRequestHandler {
                                                    String content);
 
     ReviewCommand.UpdateReview toUpdateReviewCommand(Long reviewId, Long userId, ReviewRequest.Review request);
+
+    ReviewCommand.DeleteReview toDeleteReviewCommand(Long reviewId, Long userId);
 }

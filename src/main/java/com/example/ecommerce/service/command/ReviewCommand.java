@@ -26,4 +26,12 @@ public class ReviewCommand {
         private String title;
         private String content;
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DeleteReview {
+        private Long reviewId;
+        private Long userId;
+    }
 }
