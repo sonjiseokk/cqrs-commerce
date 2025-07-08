@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ProductCommandService implements ProductCommandHandler {
+    private final ProductOptionGroupRepository productOptionGroupRepository;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -392,10 +393,11 @@ public class ProductCommandService implements ProductCommandHandler {
 
             List<Category> categories = categoryRepository.findAllById(categoryIds);
 
-            product.getCategories().clear(); // 연관관계 초기화
+            // ProductCategory 초기화
+            productCategoryRepository.deleteByProduct(product);
 
-            // DB 반영
-            entityManager.flush();
+            // 메모리 정합성 유지
+            product.getCategories().clear();
 
             // 연관 관계 설정
             for (Category category : categories) {
@@ -412,11 +414,10 @@ public class ProductCommandService implements ProductCommandHandler {
 
         // Tag
         if (!command.getTags().isEmpty()) {
-            // 기존 태그 초기화
+            // 기존 태그 초기화 (SQL)
+            productTagRepository.deleteByProduct(product);
+            // 메모리 정합성 유지
             product.getTags().clear();
-
-            // DB 반영
-            entityManager.flush();
 
             List<Tag> tags = tagRepository.findAllById(command.getTags());
 
@@ -433,11 +434,11 @@ public class ProductCommandService implements ProductCommandHandler {
 
         // Product Image
         if (command.getImages() != null && !command.getImages().isEmpty()) {
-            // 현재 연관관계 초기화 (PUT)
-            product.getImages().clear();
+            // 모두 삭제 (SQL 전용, PUT)
+            productImageRepository.deleteByProduct(product);
 
-            // DB 반영
-            entityManager.flush();
+            // 메모리 정합성 유지
+            product.getImages().clear();
 
             for (ProductDto.ImageDetail imageDto : command.getImages()) {
                 ProductImage imageEntity;
@@ -461,11 +462,13 @@ public class ProductCommandService implements ProductCommandHandler {
 
 
     private void updateGroups(List<ProductDto.OptionGroup> optionGroups, Product product) {
-        // 현재 옵션 그룹 초기화
-        product.getOptionGroups().clear();
+        // Product 관련 옵션들 모두 삭제 (Put)
+        productOptionRepository.deleteAllOptionsByProduct(product);
+        productOptionGroupRepository.deleteAllGroupsByProduct(product);
 
-        // DB 반영
-        entityManager.flush();
+        // SQL만 날린 상태기 때문에 메모리 정합성을 유지해야함
+        product.getOptionGroups().forEach(og -> og.getOptions().clear());
+        product.getOptionGroups().clear();
 
         // 현재의 옵션 그룹 -> Map<id, Entity>
         for (ProductDto.OptionGroup groupDto : optionGroups) {
@@ -481,12 +484,6 @@ public class ProductCommandService implements ProductCommandHandler {
     }
 
     private void updateOptions(ProductOptionGroup group, List<ProductDto.Option> optionDtos) {
-        // 현재 가진 옵션 초기화
-        group.getOptions().clear();
-
-        // DB 반영
-        entityManager.flush();
-
         for (ProductDto.Option dto : optionDtos) {
             ProductOption optionEntity = productMapper.toProductOptionEntity(dto, group);
 

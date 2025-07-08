@@ -44,7 +44,8 @@ public class Review {
     private LocalDateTime updatedAt;
 
     @Column(name = "verified_purchase", nullable = false)
-    private boolean verifiedPurchase;
+    @Builder.Default
+    private boolean verifiedPurchase = false;
 
     @Column(name = "helpful_votes", nullable = false)
     @Builder.Default
@@ -60,4 +61,13 @@ public class Review {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    // Helper Method
+
+    public void update(Integer rating, String title, String content) {
+        this.rating = rating;
+        this.title = title;
+        this.content = content;
+    }
+
 }

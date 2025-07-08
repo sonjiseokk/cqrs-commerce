@@ -1,9 +1,6 @@
 package com.example.ecommerce.controller.advice;
 
-import com.example.ecommerce.common.ApiResponse;
-import com.example.ecommerce.common.DuplicateSlugException;
-import com.example.ecommerce.common.ErrorResponse;
-import com.example.ecommerce.common.ResourceNotFoundException;
+import com.example.ecommerce.common.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -83,6 +80,18 @@ public class ProductControllerAdvise {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    @ExceptionHandler(UnauthorizedReviewException.class)
+    public ResponseEntity<?> handleUnauthorizedReviewException(UnauthorizedReviewException ex) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .success(false)
+                .error(ErrorResponse.Error.builder()
+                        .code(String.valueOf(HttpStatus.FORBIDDEN))
+                        .message(ex.getMessage())
+                        .build())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
 
 
 }

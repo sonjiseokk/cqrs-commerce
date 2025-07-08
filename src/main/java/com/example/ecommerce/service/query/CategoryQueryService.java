@@ -1,12 +1,10 @@
 package com.example.ecommerce.service.query;
 
 import com.example.ecommerce.common.ResourceNotFoundException;
-import com.example.ecommerce.controller.dto.CategoryGetProducts;
+import com.example.ecommerce.controller.dto.ProductResponse;
 import com.example.ecommerce.entity.Category;
-import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.repository.CategoryRepository;
 import com.example.ecommerce.repository.ProductQueryRepository;
-import com.example.ecommerce.repository.ProductRepository;
 import com.example.ecommerce.service.dto.CategoryDto;
 import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.dto.ProductDto;
@@ -62,7 +60,7 @@ public class CategoryQueryService implements CategoryQueryHandler {
     }
 
     @Override
-    public CategoryGetProducts getCategoryProducts(CategoryQuery.CategoryProducts query) {
+    public ProductResponse.CategoryProducts getCategoryProducts(CategoryQuery.CategoryProducts query) {
         // 최상위 카테고리 존재 확인
         Category parentCategory = categoryRepository.findByIdWithParent(query.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("category", query.getCategoryId()));
         // 최상위 카테고리 정보 DTO 변환
@@ -91,7 +89,7 @@ public class CategoryQueryService implements CategoryQueryHandler {
                     .perPage(result.getSize())
                     .build();
 
-            return CategoryGetProducts.builder()
+            return ProductResponse.CategoryProducts.builder()
                     .category(categoryDetail)
                     .items(result.getContent())
                     .pagination(paginationInfo)
