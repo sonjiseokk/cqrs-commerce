@@ -1,6 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
+import com.example.ecommerce.common.UnauthorizedReviewException;
 import com.example.ecommerce.controller.dto.ReviewRequest;
 import com.example.ecommerce.controller.mapper.ReviewRequestHandler;
 import com.example.ecommerce.service.command.ReviewCommand;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/products")
+@RequestMapping("/api/v1")
 public class ReviewController {
     private final ReviewRequestHandler reviewRequestHandler;
     private final ReviewQueryHandler reviewQueryHandler;
@@ -27,7 +28,7 @@ public class ReviewController {
      *
      * 특정 상품의 리뷰 목록을 조회합니다.
      */
-    @GetMapping("/{productId}/reviews")
+    @GetMapping("/products/{productId}/reviews")
     public ResponseEntity<ApiResponse<?>> getReviews(@PathVariable Long productId,
                                                      @RequestParam(required = false, defaultValue = "1") Integer page,
                                                      @RequestParam(required = false, defaultValue = "10") Integer perPage,
@@ -52,7 +53,7 @@ public class ReviewController {
         ));
     }
 
-    @PostMapping("/{productId}/reviews")
+    @PostMapping("/products/{productId}/reviews")
     public ResponseEntity<ApiResponse<?>> createReview(@PathVariable Long productId,
                                                        @RequestBody ReviewRequest.Review request) {
         // :TODO 유저 ID 받는 부분 편집하기
@@ -69,5 +70,20 @@ public class ReviewController {
                 response,
                 "리뷰가 성공적으로 등록되었습니다."
         ));
+    }
+
+    @PutMapping("/reviews/{reviewId}")
+    public ResponseEntity<ApiResponse<?>> updateReview(@PathVariable Long reviewId,
+                                                       @RequestBody ReviewRequest.Review request) throws UnauthorizedReviewException {
+        // :TODO 유저 ID 받는 부분 편집하기
+        ReviewCommand.UpdateReview command = reviewRequestHandler.toUpdateReviewCommand(reviewId, 1L, request);
+
+        ReviewDto.UpdateReview response = reviewCommandHandler.updateReview(command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                response,
+                "리뷰가 성공적으로 수정되었습니다."
+        ));
+
     }
 }

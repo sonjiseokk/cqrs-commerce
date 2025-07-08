@@ -41,6 +41,18 @@ public class ReviewDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    public static class UpdateReview {
+        private Long id;
+        private Integer rating;
+        private String title;
+        private String content;
+        private LocalDateTime updatedAt;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class User {
         private Long id;
         private String name;

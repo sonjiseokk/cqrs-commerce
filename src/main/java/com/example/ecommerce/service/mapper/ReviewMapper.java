@@ -63,4 +63,6 @@ public interface ReviewMapper {
     }
 
     ReviewDto.Review toReviewDto(Review review);
+
+    ReviewDto.UpdateReview toUpdateReview(Review review);
 }

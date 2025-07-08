@@ -1,6 +1,7 @@
 package com.example.ecommerce.service.command;
 
 import com.example.ecommerce.common.ResourceNotFoundException;
+import com.example.ecommerce.common.UnauthorizedReviewException;
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.entity.Review;
 import com.example.ecommerce.entity.User;
@@ -40,5 +41,33 @@ public class ReviewCommandService implements ReviewCommandHandler {
         reviewRepository.save(entity);
 
         return reviewMapper.toReviewDto(entity);
+    }
+
+    @Override
+    @Transactional
+    public ReviewDto.UpdateReview updateReview(ReviewCommand.UpdateReview command) throws UnauthorizedReviewException {
+        // User 조회
+        User user = userRepository.findById(command.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("user", command.getUserId()));
+
+        // Review 조회
+        Review review = reviewRepository.findByIdWithUser(command.getReviewId())
+                .orElseThrow(() -> new ResourceNotFoundException("review", command.getReviewId()));
+
+        // Exception : 작성자가 아닌 경우
+        if (review.getUser().getId() != user.getId()) {
+            throw new UnauthorizedReviewException();
+        }
+
+        review.update(
+                command.getRating(),
+                command.getTitle(),
+                command.getContent()
+        );
+
+        // 명시적 세이브
+        reviewRepository.save(review);
+
+        return reviewMapper.toUpdateReview(review);
     }
 }

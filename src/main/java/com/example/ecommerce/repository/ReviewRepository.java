@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByProduct(Product product);
@@ -24,4 +25,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @EntityGraph(attributePaths = {"user"})
     Page<Review> findByProduct(Product product, Pageable pageable);
+
+    @Query("select r from Review r " +
+            "where r.id = :reviewId")
+    @EntityGraph(attributePaths = {"user"})
+    Optional<Review> findByIdWithUser(@Param("reviewId") Long reviewId);
+
 }

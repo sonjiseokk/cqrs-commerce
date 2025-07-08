@@ -15,4 +15,15 @@ public class ReviewCommand {
         private String title;
         private String content;
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UpdateReview {
+        private Long reviewId;
+        private Long userId;
+        private Integer rating;
+        private String title;
+        private String content;
+    }
 }

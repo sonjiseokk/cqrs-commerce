@@ -1,5 +1,6 @@
 package com.example.ecommerce.controller.mapper;
 
+import com.example.ecommerce.controller.dto.ReviewRequest;
 import com.example.ecommerce.service.command.ReviewCommand;
 import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.query.ReviewQuery;
@@ -14,4 +15,6 @@ public interface ReviewRequestHandler {
                                                    Integer rating,
                                                    String title,
                                                    String content);
+
+    ReviewCommand.UpdateReview toUpdateReviewCommand(Long reviewId, Long userId, ReviewRequest.Review request);
 }

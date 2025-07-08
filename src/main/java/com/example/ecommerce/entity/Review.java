@@ -61,4 +61,13 @@ public class Review {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    // Helper Method
+
+    public void update(Integer rating, String title, String content) {
+        this.rating = rating;
+        this.title = title;
+        this.content = content;
+    }
+
 }
