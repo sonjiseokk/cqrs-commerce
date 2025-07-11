@@ -1,4 +1,4 @@
-package com.example.ecommerce.service.query;
+package com.example.ecommerce.service.query.rdb;
 
 import com.example.ecommerce.common.ResourceNotFoundException;
 import com.example.ecommerce.controller.dto.ProductResponse;
@@ -8,8 +8,11 @@ import com.example.ecommerce.repository.ProductRepository;
 import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.dto.ProductDto;
 import com.example.ecommerce.service.mapper.ProductMapper;
+import com.example.ecommerce.service.query.ProductQuery;
+import com.example.ecommerce.service.query.ProductQueryHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Primary
 public class ProductQueryService implements ProductQueryHandler {
     private final ProductRepository productRepository;
     private final ProductQueryRepository queryRepository;
@@ -44,7 +48,7 @@ public class ProductQueryService implements ProductQueryHandler {
     }
 
     @Override
-    public ProductResponse.GetProduct getProduct(ProductQuery.GetProduct query) {
+    public ProductDto.ProductDetail getProduct(ProductQuery.GetProduct query) {
         // 1. 다중 조인 단건 조회
         Product product = productQueryRepository.getProduct(query)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", query.getProductId()));
@@ -58,7 +62,7 @@ public class ProductQueryService implements ProductQueryHandler {
         // 3. 관련 상품 리스트 Setter 주입
         content.setRelatedProducts(relatedProducts);
 
-        return new ProductResponse.GetProduct(content);
+        return content;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.example.ecommerce.service.query;
+package com.example.ecommerce.service.query.rdb;
 
 import com.example.ecommerce.controller.dto.ProductResponse;
 import com.example.ecommerce.repository.CategoryQueryRepository;

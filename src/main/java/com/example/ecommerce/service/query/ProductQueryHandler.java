@@ -8,7 +8,7 @@ import java.util.List;
 public interface ProductQueryHandler {
     ProductResponse.GetProductList getProducts(ProductQuery.ListProducts query);
 
-    ProductResponse.GetProduct getProduct(ProductQuery.GetProduct query);
+    ProductDto.ProductDetail getProduct(ProductQuery.GetProduct query);
 
     List<ProductDto.ProductSummary> getNewProducts();
 

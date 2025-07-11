@@ -2,7 +2,7 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.common.ApiResponse;
 import com.example.ecommerce.controller.dto.ProductResponse;
-import com.example.ecommerce.service.query.MainQueryService;
+import com.example.ecommerce.service.query.rdb.MainQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -17,15 +17,6 @@ public class ProductResponse {
     @Builder
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class GetProduct {
-        private ProductDto.ProductDetail data;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @Builder
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class GetProductList {
         private List<ProductDto.ProductSummary> items;
         private PaginationDto.PaginationInfo pagination;

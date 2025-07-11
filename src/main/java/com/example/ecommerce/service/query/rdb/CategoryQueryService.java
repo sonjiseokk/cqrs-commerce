@@ -1,4 +1,4 @@
-package com.example.ecommerce.service.query;
+package com.example.ecommerce.service.query.rdb;
 
 import com.example.ecommerce.common.ResourceNotFoundException;
 import com.example.ecommerce.controller.dto.ProductResponse;
@@ -10,6 +10,8 @@ import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.dto.ProductDto;
 import com.example.ecommerce.service.mapper.CategoryMapper;
 import com.example.ecommerce.service.mapper.ProductMapper;
+import com.example.ecommerce.service.query.CategoryQuery;
+import com.example.ecommerce.service.query.CategoryQueryHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
