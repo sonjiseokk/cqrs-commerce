@@ -321,6 +321,19 @@ public class ProductCommandService implements ProductCommandHandler {
                 productImageRepository.save(imageEntity);
             }
         }
+
+        // Product OptionGroup
+        if (command.getOptionGroups() != null && !command.getOptionGroups().isEmpty()) {
+            for (ProductDto.OptionGroup groupDto : command.getOptionGroups()) {
+                // 엔티티 생성
+                ProductOptionGroup optionGroupEntity = productMapper.toProductOptionGroupEntity(groupDto, product);
+
+                // 하위 Option 필드 업데이트
+                updateOptions(optionGroupEntity, groupDto.getOptions());
+
+                product.getOptionGroups().add(optionGroupEntity);
+            }
+        }
     }
 
     /**

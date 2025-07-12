@@ -14,4 +14,7 @@ public interface ProductOptionRepository extends JpaRepository<ProductOption, Lo
         where po.optionGroup.product = :product
     """)
     void deleteAllOptionsByProduct(@Param("product") Product product);
+
+    @Query("SELECT o.optionGroup.product.id FROM ProductOption o WHERE o.id = :optionId")
+    Long findProductIdByOptionId(@Param("optionId") Long optionId);
 }

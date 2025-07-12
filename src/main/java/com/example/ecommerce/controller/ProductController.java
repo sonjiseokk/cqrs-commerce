@@ -70,7 +70,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<?>> getProduct(@PathVariable Long productId) {
         ProductQuery.GetProduct query = productRequestMapper.toGetProductCommand(productId);
 
-        ProductResponse.GetProduct response = queryHandler.getProduct(query);
+        ProductDto.ProductDetail response = queryHandler.getProduct(query);
 
         return ResponseEntity.ok(ApiResponse.success(
                 response,
