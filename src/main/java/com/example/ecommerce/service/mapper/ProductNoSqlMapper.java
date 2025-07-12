@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -131,6 +132,66 @@ public class ProductNoSqlMapper {
     }
 
     /**
+     * ProductDocument를 ProductDto.ProductSummary로 변환
+     */
+    public ProductDto.ProductSummary toProductSummaryDto(ProductDocument document) {
+        if (document == null) {
+            return null;
+        }
+
+        ProductDto.ProductSummary.ProductSummaryBuilder builder = ProductDto.ProductSummary.builder()
+                .id(document.getId())
+                .name(document.getName())
+                .slug(document.getSlug())
+                .shortDescription(document.getShortDescription())
+                .createdAt(document.getCreatedAt())
+                .status(document.getStatus())
+                .inStock("ACTIVE".equals(document.getStatus()));
+
+        // 판매자 정보 설정
+        if (document.getSeller() != null) {
+            builder.seller(ProductDto.SellerSummary.builder()
+                    .id(document.getSeller().getId())
+                    .name(document.getSeller().getName())
+                    .build());
+        }
+
+        // 브랜드 정보 설정
+        if (document.getBrand() != null) {
+            builder.brand(ProductDto.BrandSummary.builder()
+                    .id(document.getBrand().getId())
+                    .name(document.getBrand().getName())
+                    .build());
+        }
+
+        // 가격 정보 설정
+        if (document.getPrice() != null) {
+            builder.basePrice(document.getPrice().getBasePrice());
+            builder.salePrice(document.getPrice().getSalePrice());
+            builder.currency(document.getPrice().getCurrency());
+        }
+
+        // 리뷰 정보 설정
+        if (document.getRating() != null) {
+            builder.rating(document.getRating().getAverage());
+            builder.reviewCount(document.getRating().getCount());
+        }
+
+        // 대표 이미지 설정
+        if (document.getImages() != null && !document.getImages().isEmpty()) {
+            Optional<ProductDocument.Image> primaryImage = document.getImages().stream()
+                    .filter(ProductDocument.Image::isPrimary)
+                    .findFirst();
+
+            if (primaryImage.isPresent()) {
+                builder.primaryImage(toImageSummaryDto(primaryImage.get()));
+            }
+        }
+
+        return builder.build();
+    }
+
+    /**
      * 카테고리 정보 변환
      */
     private ProductDto.CategorySummary toCategoryDto(ProductDocument.CategoryInfo categoryInfo) {
@@ -195,6 +256,13 @@ public class ProductNoSqlMapper {
                 .isPrimary(image.isPrimary())
                 .displayOrder(image.getDisplayOrder())
                 .optionId(image.getOptionId())
+                .build();
+    }
+
+    private ProductDto.ImageSummary toImageSummaryDto(ProductDocument.Image image) {
+        return ProductDto.ImageSummary.builder()
+                .url(image.getUrl())
+                .altText(image.getAltText())
                 .build();
     }
 

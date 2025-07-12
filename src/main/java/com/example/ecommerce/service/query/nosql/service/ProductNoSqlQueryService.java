@@ -3,6 +3,7 @@ package com.example.ecommerce.service.query.nosql.service;
 
 import com.example.ecommerce.common.ResourceNotFoundException;
 import com.example.ecommerce.controller.dto.ProductResponse;
+import com.example.ecommerce.service.dto.PaginationDto;
 import com.example.ecommerce.service.dto.ProductDto;
 import com.example.ecommerce.service.mapper.ProductNoSqlMapper;
 import com.example.ecommerce.service.query.ProductQuery;
@@ -17,10 +18,13 @@ import com.example.ecommerce.service.query.nosql.repository.SellerDocumentReposi
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,10 +35,32 @@ public class ProductNoSqlQueryService implements ProductQueryHandler {
     private final SellerDocumentRepository sellerDocumentRepository;
     private final ProductNoSqlMapper productNoSqlMapper;
     private final BrandDocumentRepository brandDocumentRepository;
+    private final ProductSearchOperations productSearchOperations;
 
     @Override
     public ProductResponse.GetProductList getProducts(ProductQuery.ListProducts query) {
-        return null;
+        Page<ProductDocument> productDocuments = productSearchOperations.searchProductsByConditions(query);
+
+        List<ProductDto.ProductSummary> productSummaries = productDocuments.stream()
+                .map(productNoSqlMapper::toProductSummaryDto)
+                .toList();
+
+        long totalItems = productDocuments.getTotalElements();
+        int totalPages = productDocuments.getTotalPages();
+        int currentPage = productDocuments.getNumber() + 1;
+        int perPage = productDocuments.getNumberOfElements();
+
+        PaginationDto.PaginationInfo paginationInfo = PaginationDto.PaginationInfo.builder()
+                .totalItems((int) totalItems)
+                .totalPages(totalPages)
+                .currentPage(currentPage)
+                .perPage(perPage)
+                .build();
+
+        return ProductResponse.GetProductList.builder()
+                .items(productSummaries)
+                .pagination(paginationInfo)
+                .build();
     }
 
     @Override
